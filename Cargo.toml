@@ -1,0 +1,10 @@
+[workspace]
+members = [
+    "mailman", 
+    "mailman-tcp",
+    "mailman-udp",
+    "mailman-http",
+    "mailman-webworker",
+    "mailman-websocket",
+    "mailman-webrtc-datachannel",
+]
