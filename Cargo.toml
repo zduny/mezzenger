@@ -1,6 +1,7 @@
 [workspace]
 members = [
-    "mailman", 
+    "mailman",
+    "mailman-dummy",
     "mailman-tcp",
     "mailman-udp",
     "mailman-http",
