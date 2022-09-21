@@ -14,12 +14,21 @@ use std::{
 use futures::FutureExt;
 
 /// Transport error.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(PartialEq, Eq)]
 pub enum Error<Other> {
     /// Occurs when transport is closed.
     Closed,
     /// Other non-predefined transport-specific error.
     Other(Other),
+}
+
+impl<Other> Debug for Error<Other> where Other: Debug {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Closed => write!(f, "Closed"),
+            Self::Other(arg0) => f.debug_tuple("Other").field(arg0).finish(),
+        }
+    }
 }
 
 impl<Other> Display for Error<Other>
@@ -74,7 +83,6 @@ impl<'a, Sender, Message> futures::Sink<Message> for Sink<'a, Sender, Message>
 where
     Message: 'a,
     Sender: Send<Message>,
-    <Sender as Send<Message>>::Output<'a>: Unpin,
 {
     type Error = Error<Sender::Error>;
 
@@ -89,7 +97,7 @@ where
 
     fn poll_flush(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
         if let Some(message) = self.buffer.pop_front() {
-            self.sender.send(&message).poll_unpin(cx)
+            Box::pin(self.sender.send(&message)).poll_unpin(cx)
         } else {
             Poll::Ready(Ok(()))
         }
@@ -145,12 +153,11 @@ impl<'a, Receiver, Message> futures::Stream for Stream<'a, Receiver, Message>
 where
     Message: 'a,
     Receiver: Receive<Message>,
-    <Receiver as Receive<Message>>::Output<'a>: Unpin,
 {
     type Item = Message;
 
     fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
-        match self.receiver.receive().poll_unpin(cx) {
+        match Box::pin(self.receiver.receive()).poll_unpin(cx) {
             Poll::Ready(result) => match result {
                 Ok(message) => Poll::Ready(Some(message)),
                 Err(error) => match error {
@@ -170,7 +177,6 @@ impl<'a, Receiver, Message> futures::stream::FusedStream for Stream<'a, Receiver
 where
     Message: 'a,
     Receiver: Receive<Message>,
-    <Receiver as Receive<Message>>::Output<'a>: Unpin,
 {
     fn is_terminated(&self) -> bool {
         self.terminated

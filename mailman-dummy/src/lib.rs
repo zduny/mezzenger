@@ -8,15 +8,11 @@
 
 #![feature(generic_associated_types)]
 
-#[cfg(target_arch = "wasm32")]
-mod browser;
-#[cfg(target_arch = "wasm32")]
-pub use browser::*;
+mod rc;
+pub use rc::*;
 
 #[cfg(not(target_arch = "wasm32"))]
-mod native;
-#[cfg(not(target_arch = "wasm32"))]
-pub use native::*;
+pub mod sync;
 
 #[cfg(test)]
 mod tests {
@@ -31,12 +27,15 @@ mod tests {
         Symbol,
     }
 
-    async fn test_send_and_receive() {
+    async fn test_send_and_receive<T>(transport: T)
+    where
+        T: Send<Message> + Receive<Message> + Close,
+        <T as mailman::Send<Message>>::Error: std::fmt::Debug + PartialEq,
+        <T as mailman::Receive<Message>>::Error: std::fmt::Debug + PartialEq,
+    {
         let message_0 = Message::Integer(2);
         let message_1 = Message::String("Hello World!".to_string());
         let message_2 = Message::Symbol;
-
-        let transport = Transport::new();
 
         transport.send(&message_0).await.unwrap();
         transport.send(&message_1).await.unwrap();
@@ -58,12 +57,15 @@ mod tests {
         assert_eq!(Error::Closed, transport.receive().await.unwrap_err());
     }
 
-    async fn test_stream() {
+    async fn test_stream<T>(transport: T)
+    where
+        T: Send<Message> + Receive<Message> + Close,
+        <T as mailman::Send<Message>>::Error: std::fmt::Debug,
+    {
         let message_0 = Message::Integer(2);
         let message_1 = Message::String("Hello World!".to_string());
         let message_2 = Message::Symbol;
 
-        let transport = Transport::new();
         let stream = transport.stream();
 
         transport.send(&message_0).await.unwrap();
@@ -74,19 +76,17 @@ mod tests {
 
         assert_eq!(
             vec![message_0, message_1, message_2],
-            stream.collect::<Vec<Message>>().await
+            StreamExt::collect::<Vec<Message>>(stream).await
         )
-    }
-
-    async fn test_all() {
-        test_send_and_receive().await;
-        test_stream().await;
     }
 
     #[cfg(not(target_arch = "wasm32"))]
     #[tokio::test]
     async fn test() {
-        test_all().await;
+        test_send_and_receive(Transport::new()).await;
+        test_stream(Transport::new()).await;
+        test_send_and_receive(crate::sync::Transport::new()).await;
+        test_stream(crate::sync::Transport::new()).await;
     }
 
     #[cfg(target_arch = "wasm32")]
@@ -98,6 +98,7 @@ mod tests {
     #[cfg(target_arch = "wasm32")]
     #[wasm_bindgen_test]
     async fn test() {
-        test_all().await;
+        test_send_and_receive(Transport::new()).await;
+        test_stream(Transport::new()).await;
     }
 }
