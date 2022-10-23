@@ -106,7 +106,7 @@ impl<'a, Message> Future for Close<'a, Message> {
 
     fn poll(mut self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<Self::Output> {
         if self.terminated {
-            Poll::Pending
+            Poll::Ready(())
         } else {
             self.transport.close();
             self.terminated = true;
