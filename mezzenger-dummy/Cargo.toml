@@ -1,0 +1,17 @@
+[package]
+name = "mezzenger-dummy"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+mezzenger = { path = "../mezzenger" }
+futures = "0.3.24"
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+parking_lot = "0.12.1"
+
+[target.'cfg(target_arch = "wasm32")'.dev-dependencies]
+wasm-bindgen-test = "0.3.33"
+
+[target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
+tokio = { version = "1.21.1", features = ["full"] }

@@ -1,11 +1,11 @@
 [workspace]
 members = [
-    "mailman",
-    "mailman-dummy",
-    "mailman-tcp",
-    "mailman-udp",
-    "mailman-http",
-    "mailman-webworker",
-    "mailman-websocket",
-    "mailman-webrtc-datachannel",
+    "mezzenger",
+    "mezzenger-dummy",
+    "mezzenger-tcp",
+    "mezzenger-udp",
+    "mezzenger-http",
+    "mezzenger-webworker",
+    "mezzenger-websocket",
+    "mezzenger-webrtc-datachannel",
 ]
