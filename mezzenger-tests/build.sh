@@ -11,6 +11,11 @@ cd server
 cargo build --release
 cd ..
 
+echo "\nBuilding worker..."
+cd worker
+wasm-pack build --release --target web
+cd ..
+
 echo "\nBuilding client..."
 cd client
 wasm-pack build --release --target web
