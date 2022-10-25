@@ -1,7 +1,13 @@
 [package]
 name = "mezzenger"
 version = "0.1.0"
+authors = ["zduny <dzduniak@gmail.com>"]
 edition = "2021"
+description = "Message passing infrastructure."
+license = "Apache-2.0"
+repository = "https://github.com/zduny/mezzenger"
+documentation = "https://docs.rs/mezzenger/"
+keywords = ["message", "message-passing", "communication"]
 
 [dependencies]
 futures = "0.3.25"
