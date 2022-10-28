@@ -63,65 +63,6 @@ impl<Message, Error> Default for State<Message, Error> {
         Self::new()
     }
 }
-
-/// Future returned by [send] method.
-///
-/// [send]: mezzenger::Send::send
-pub struct Send<'a, Transport, Message, Error, SendClosure>
-where
-    SendClosure: FnOnce(&Transport, Message) -> Result<(), mezzenger::Error<Error>>,
-{
-    transport: &'a Transport,
-    message: Option<Message>,
-    closure: Option<SendClosure>,
-}
-
-impl<'a, Transport, Message, Error, SendClosure> Send<'a, Transport, Message, Error, SendClosure>
-where
-    SendClosure: FnOnce(&Transport, Message) -> Result<(), mezzenger::Error<Error>>,
-{
-    /// Create new future for [send] method.
-    ///
-    /// [send]: mezzenger::Send::send
-    pub fn new(transport: &'a Transport, message: Message, send_closure: SendClosure) -> Self {
-        Send { transport, message: Some(message), closure: Some(send_closure) }
-    }
-}
-
-impl<'a, Transport, Message, Error, SendClosure> Unpin
-    for Send<'a, Transport, Message, Error, SendClosure>
-where
-    SendClosure: FnOnce(&Transport, Message) -> Result<(), mezzenger::Error<Error>>,
-{
-}
-
-impl<'a, Transport, Message, Error, SendClosure> Future
-    for Send<'a, Transport, Message, Error, SendClosure>
-where
-    SendClosure: FnOnce(&Transport, Message) -> Result<(), mezzenger::Error<Error>>,
-{
-    type Output = Result<(), mezzenger::Error<Error>>;
-
-    fn poll(mut self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<Self::Output> {
-        if self.message.is_some() {
-            let closure = self.closure.take().unwrap();
-            Poll::Ready(closure(self.transport, self.message.take().unwrap()))
-        } else {
-            Poll::Pending
-        }
-    }
-}
-
-impl<'a, Transport, Message, Error, SendClosure> FusedFuture
-    for Send<'a, Transport, Message, Error, SendClosure>
-where
-    SendClosure: FnOnce(&Transport, Message) -> Result<(), mezzenger::Error<Error>>,
-{
-    fn is_terminated(&self) -> bool {
-        self.message.is_none()
-    }
-}
-
 /// Future returned by [receive] method.
 ///
 /// [receive]: mezzenger::Receive::receive
