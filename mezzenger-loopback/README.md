@@ -1,10 +1,7 @@
-# mezzenger
+# mezzenger-loopback
 
-Message passing infrastructure for Rust.
+Loopback transport for [mezzenger](https://github.com/zduny/mezzenger).
 
-This crate defines common interface for message transports.
-
-https://crates.io/crates/mezzenger
+https://crates.io/crates/mezzenger-loopback
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/O5O31JYZ4)
-

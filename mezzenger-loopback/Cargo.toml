@@ -1,5 +1,5 @@
 [package]
-name = "mezzenger-dummy"
+name = "mezzenger-loopback"
 version = "0.1.0"
 authors = ["zduny <dzduniak@gmail.com>"]
 edition = "2021"
@@ -7,7 +7,7 @@ description = "Loopback mezzenger transport."
 license = "Apache-2.0"
 repository = "https://github.com/zduny/mezzenger"
 homepage = "https://github.com/zduny/mezzenger/tree/master/mezzenger-loopback"
-documentation = "https://docs.rs/mezzenger/"
+documentation = "https://docs.rs/mezzenger-loopback/"
 keywords = ["message", "message-passing", "communication", "mezzenger", "loopback"]
 
 [dependencies]
