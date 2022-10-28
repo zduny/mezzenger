@@ -1,10 +1,9 @@
-# mezzenger
+# mezzenger-tcp
 
-Message passing infrastructure for Rust.
+TCP transport for [mezzenger](https://github.com/zduny/mezzenger).
 
-This crate defines common interface for message transports.
+Work in progress - doesn't work yet, crate name reserved for future use.
 
-https://crates.io/crates/mezzenger
+https://crates.io/crates/mezzenger-tcp
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/O5O31JYZ4)
-
