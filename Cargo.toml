@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "mezzenger",
+    "mezzenger-common",
     "mezzenger-loopback",
     "mezzenger-tcp",
     "mezzenger-udp",
