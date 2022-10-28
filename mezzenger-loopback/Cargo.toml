@@ -11,8 +11,9 @@ documentation = "https://docs.rs/mezzenger-loopback/"
 keywords = ["message", "message-passing", "communication", "mezzenger", "loopback"]
 
 [dependencies]
-mezzenger = { path = "../mezzenger" }
 futures = "0.3.25"
+mezzenger = { path = "../mezzenger" }
+mezzenger-common = { path = "../mezzenger-common" }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 parking_lot = "0.12.1"

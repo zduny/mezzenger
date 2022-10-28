@@ -1,14 +1,9 @@
-use std::{
-    cell::RefCell,
-    collections::VecDeque,
-    convert::Infallible,
-    future::Future,
-    pin::Pin,
-    rc::{Rc, Weak},
-    task::{Context, Poll, Waker},
-};
+use std::{cell::RefCell, convert::Infallible};
 
-use futures::future::FusedFuture;
+use mezzenger_common::{
+    rc::{Close, Receive, State},
+    Send,
+};
 
 /// Transport storing messages in local queue.
 ///
@@ -18,7 +13,7 @@ use futures::future::FusedFuture;
 /// **NOTE**: do NOT use this transport to send data between threads or async tasks,
 /// use appropriate channels instead as they will most likely be much more performant.
 pub struct Transport<Message> {
-    state: RefCell<State<Message>>,
+    state: RefCell<State<Message, Infallible>>,
 }
 
 impl<Message> Transport<Message> {
@@ -28,22 +23,6 @@ impl<Message> Transport<Message> {
             state: RefCell::new(State::new()),
         }
     }
-
-    fn wake_next(&self) {
-        while let Some(waker) = self.state.borrow_mut().wakers.pop_front() {
-            if let Some(waker) = waker.upgrade() {
-                let mut waker = waker.borrow_mut();
-                waker.woken = true;
-                waker.waker.wake_by_ref();
-                break;
-            }
-        }
-    }
-
-    fn close(&self) {
-        self.state.borrow_mut().closed = true;
-        self.wake_next();
-    }
 }
 
 impl<Message> Default for Transport<Message> {
@@ -52,72 +31,20 @@ impl<Message> Default for Transport<Message> {
     }
 }
 
-impl<Message> Drop for Transport<Message> {
-    fn drop(&mut self) {
-        self.close();
-    }
-}
+pub struct Sender {}
 
-struct State<T> {
-    buffer: VecDeque<T>,
-    wakers: VecDeque<Weak<RefCell<ReceiveWaker>>>,
-    closed: bool,
-}
-
-impl<T> State<T> {
-    fn new() -> Self {
-        State {
-            buffer: VecDeque::new(),
-            wakers: VecDeque::new(),
-            closed: false,
-        }
-    }
-}
-
-impl<Message> mezzenger::Reliable for Transport<Message> {}
-
-impl<Message> mezzenger::Order for Transport<Message> {}
-
-impl<Message> mezzenger::Close for Transport<Message> {
-    type Output<'a> = Close<'a, Message> where Self: 'a;
-
-    fn close(&self) -> Self::Output<'_> {
-        Close {
-            transport: self,
-            terminated: false,
-        }
-    }
-
-    fn is_closed(&self) -> bool {
-        self.state.borrow().closed
-    }
-}
-
-/// Future returned by [close] method.
-///
-/// [close]: mezzenger::Close::close
-pub struct Close<'a, Message> {
-    transport: &'a Transport<Message>,
-    terminated: bool,
-}
-
-impl<'a, Message> Future for Close<'a, Message> {
-    type Output = ();
-
-    fn poll(mut self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<Self::Output> {
-        if self.terminated {
-            Poll::Ready(())
+impl<Message> mezzenger_common::Sender<Transport<Message>, Message, Infallible> for Sender {
+    fn send(
+        transport: &Transport<Message>,
+        message: Message,
+    ) -> Result<(), mezzenger::Error<Infallible>> {
+        use mezzenger::Close;
+        if transport.is_closed() {
+            Err(mezzenger::Error::Closed)
         } else {
-            self.transport.close();
-            self.terminated = true;
-            Poll::Ready(())
+            transport.state.borrow_mut().message(message);
+            Ok(())
         }
-    }
-}
-
-impl<'a, Message> FusedFuture for Close<'a, Message> {
-    fn is_terminated(&self) -> bool {
-        self.terminated
     }
 }
 
@@ -127,155 +54,37 @@ where
 {
     type Error = Infallible;
 
-    type Output<'a> = Send<'a, Message> where Self: 'a;
+    type Output<'a> = Send<'a, Transport<Message>, Message, Infallible, Sender> where Self: 'a;
 
     fn send<'a>(&'a self, message: &Message) -> Self::Output<'a> {
-        Send {
-            transport: self,
-            message: Some(message.clone()),
-        }
-    }
-}
-
-/// Future returned by [send] method.
-///
-/// [send]: mezzenger::Send::send
-pub struct Send<'a, Message> {
-    transport: &'a Transport<Message>,
-    message: Option<Message>,
-}
-
-impl<'a, Message> Unpin for Send<'a, Message> {}
-
-impl<'a, Message> Future for Send<'a, Message> {
-    type Output = Result<(), mezzenger::Error<Infallible>>;
-
-    fn poll(mut self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<Self::Output> {
-        if self.message.is_some() {
-            use mezzenger::Close;
-            if self.transport.is_closed() {
-                self.message.take();
-                Poll::Ready(Err(mezzenger::Error::Closed))
-            } else {
-                self.transport
-                    .state
-                    .borrow_mut()
-                    .buffer
-                    .push_front(self.message.take().unwrap());
-                self.transport.wake_next();
-                Poll::Ready(Ok(()))
-            }
-        } else {
-            Poll::Pending
-        }
-    }
-}
-
-impl<'a, Message> FusedFuture for Send<'a, Message> {
-    fn is_terminated(&self) -> bool {
-        self.message.is_none()
+        Send::new(self, message.clone())
     }
 }
 
 impl<Message> mezzenger::Receive<Message> for Transport<Message> {
     type Error = Infallible;
 
-    type Output<'a> = Receive<'a, Message> where Message: 'a;
+    type Output<'a> = Receive<'a, Message, Infallible>
+    where
+        Self: 'a;
 
     fn receive(&self) -> Self::Output<'_> {
-        Receive {
-            transport: self,
-            terminated: false,
-            waker: None,
-        }
+        Receive::new(&self.state)
     }
 }
 
-/// Future returned by [receive] method.
-///
-/// [send]: mezzenger::Receive::receive
-pub struct Receive<'a, Message> {
-    transport: &'a Transport<Message>,
-    terminated: bool,
-    waker: Option<Rc<RefCell<ReceiveWaker>>>,
-}
+impl<Message> mezzenger::Close for Transport<Message> {
+    type Output<'a> = Close<'a, Message, Infallible> where Self: 'a;
 
-impl<'a, Message> Drop for Receive<'a, Message> {
-    fn drop(&mut self) {
-        // We were woken but didn't receive anything, wake up another
-        if self
-            .waker
-            .take()
-            .map_or(false, |waker| waker.borrow().woken)
-        {
-            self.transport.wake_next();
-        }
+    fn close(&self) -> Self::Output<'_> {
+        Close::new(&self.state)
+    }
+
+    fn is_closed(&self) -> bool {
+        self.state.borrow().closed
     }
 }
 
-impl<'a, Message> Unpin for Receive<'a, Message> {}
+impl<Message> mezzenger::Reliable for Transport<Message> {}
 
-struct ReceiveWaker {
-    waker: Waker,
-    woken: bool,
-}
-
-impl ReceiveWaker {
-    fn new(waker: Waker) -> Self {
-        ReceiveWaker {
-            waker,
-            woken: false,
-        }
-    }
-
-    fn update(&mut self, waker: &Waker) {
-        if !self.waker.will_wake(waker) {
-            self.waker = waker.clone();
-        }
-    }
-}
-
-impl<'a, Message> Future for Receive<'a, Message> {
-    type Output = Result<Message, mezzenger::Error<Infallible>>;
-
-    fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
-        if self.terminated {
-            Poll::Pending
-        } else {
-            let mut state = self.transport.state.borrow_mut();
-            match state.buffer.pop_back() {
-                Some(message) => {
-                    self.terminated = true;
-                    self.waker = None;
-                    Poll::Ready(Ok(message))
-                }
-                None => {
-                    if state.closed {
-                        self.terminated = true;
-                        Poll::Ready(Err(mezzenger::Error::Closed))
-                    } else {
-                        if let Some(waker) = &self.waker {
-                            let mut waker = waker.borrow_mut();
-                            waker.update(cx.waker());
-                            waker.woken = false;
-                        } else {
-                            let waker =
-                                Rc::new(RefCell::new(ReceiveWaker::new(cx.waker().clone())));
-                            self.waker = Some(waker);
-                        }
-                        state
-                            .wakers
-                            .push_front(Rc::downgrade(self.waker.as_ref().unwrap()));
-                        Poll::Pending
-                    }
-                }
-            }
-        }
-    }
-}
-
-impl<'a, Message> FusedFuture for Receive<'a, Message> {
-    fn is_terminated(&self) -> bool {
-        self.terminated
-    }
-}
+impl<Message> mezzenger::Order for Transport<Message> {}
