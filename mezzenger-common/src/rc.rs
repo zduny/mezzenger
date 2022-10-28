@@ -63,6 +63,12 @@ impl<Message, Error> Default for State<Message, Error> {
     }
 }
 
+impl<Message, Error> Drop for State<Message, Error> {
+    fn drop(&mut self) {
+        self.close();
+    }
+} 
+
 /// Future returned by [send] method.
 ///
 /// [send]: mezzenger::Send::send
