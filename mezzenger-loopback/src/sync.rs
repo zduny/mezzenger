@@ -1,3 +1,5 @@
+// todo - use tokio channels
+
 use std::convert::Infallible;
 
 use mezzenger_common::{
@@ -34,16 +36,19 @@ impl<Message> Default for Transport<Message> {
 
 pub struct Sender {}
 
-impl<Message> mezzenger_common::Sender<Transport<Message>, Message, Infallible> for Sender {
+impl<Message> mezzenger_common::Sender<Transport<Message>, Message, Infallible> for Sender
+where
+    Message: Clone,
+{
     fn send(
         transport: &Transport<Message>,
-        message: Message,
+        message: &Message,
     ) -> Result<(), mezzenger::Error<Infallible>> {
         use mezzenger::Close;
         if transport.is_closed() {
             Err(mezzenger::Error::Closed)
         } else {
-            transport.state.lock().message(message);
+            transport.state.lock().message(message.clone());
             Ok(())
         }
     }
@@ -57,8 +62,10 @@ where
 
     type Output<'a> = Send<'a, Transport<Message>, Message, Infallible, Sender> where Self: 'a;
 
-    fn send<'a>(&'a self, message: &Message) -> Self::Output<'a> {
-        Send::new(self, message.clone())
+    fn send<'s, 'm>(&'s self, message: &'m Message) -> Self::Output<'s>
+    where
+        'm: 's {
+        Send::new(self, message)
     }
 }
 

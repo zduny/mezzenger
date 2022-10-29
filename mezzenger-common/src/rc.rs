@@ -1,9 +1,10 @@
-
 use futures::{future::FusedFuture, Future};
 use std::{
+    cell::RefCell,
     collections::VecDeque,
     pin::Pin,
-    task::{Context, Poll, Waker}, cell::RefCell, rc::{Rc, Weak},
+    rc::{Rc, Weak},
+    task::{Context, Poll, Waker}, marker::PhantomData,
 };
 
 /// Transport state.
@@ -67,7 +68,7 @@ impl<Message, Error> Drop for State<Message, Error> {
     fn drop(&mut self) {
         self.close();
     }
-} 
+}
 
 /// Future returned by [receive] method.
 ///
@@ -94,7 +95,11 @@ impl<'a, Message, Error> Receive<'a, Message, Error> {
 impl<'a, Message, Error> Drop for Receive<'a, Message, Error> {
     fn drop(&mut self) {
         // We were woken but didn't receive anything, wake up another
-        if self.waker.take().map_or(false, |waker| waker.borrow().woken) {
+        if self
+            .waker
+            .take()
+            .map_or(false, |waker| waker.borrow().woken)
+        {
             self.state.borrow_mut().wake_next();
         }
     }
@@ -146,7 +151,8 @@ impl<'a, Message, Error> Future for Receive<'a, Message, Error> {
                             waker.update(cx.waker());
                             waker.woken = false;
                         } else {
-                            let waker = Rc::new(RefCell::new(ReceiveWaker::new(cx.waker().clone())));
+                            let waker =
+                                Rc::new(RefCell::new(ReceiveWaker::new(cx.waker().clone())));
                             self.waker = Some(waker);
                         }
                         state
@@ -166,33 +172,54 @@ impl<'a, Message, Error> FusedFuture for Receive<'a, Message, Error> {
     }
 }
 
+pub trait Closer<Transport> {
+    fn close(transport: &Transport);
+}
+
 /// Future returned by [close] method.
 ///
 /// [close]: mezzenger::Close::close
-pub struct Close<'a, Message, Error> {
+pub struct Close<'a, Transport, Message, Error, C>
+where
+    C: Closer<Transport>,
+{
+    transport: &'a Transport,
     state: &'a RefCell<State<Message, Error>>,
     terminated: bool,
+    _closer: PhantomData<C>,
 }
 
-impl<'a, Message, Error> Close<'a, Message, Error> {
+impl<'a, Transport, Message, Error, C> Close<'a, Transport, Message, Error, C>
+where
+    C: Closer<Transport>,
+{
     /// Create new future for [close] method.
     ///
     /// [close]: mezzenger::Close::close
-    pub fn new(state: &'a RefCell<State<Message, Error>>) -> Self {
+    pub fn new(
+        transport: &'a Transport,
+        state: &'a RefCell<State<Message, Error>>,
+    ) -> Self {
         Close {
+            transport,
             state,
             terminated: false,
+            _closer: PhantomData,
         }
     }
 }
 
-impl<'a, Message, Error> Future for Close<'a, Message, Error> {
+impl<'a, Transport, Message, Error, C> Future for Close<'a, Transport, Message, Error, C>
+where
+    C: Closer<Transport>,
+{
     type Output = ();
 
     fn poll(mut self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<Self::Output> {
         if self.terminated {
             Poll::Ready(())
         } else {
+            C::close(&self.transport);
             self.state.borrow_mut().close();
             self.terminated = true;
             Poll::Ready(())
@@ -200,8 +227,16 @@ impl<'a, Message, Error> Future for Close<'a, Message, Error> {
     }
 }
 
-impl<'a, Message, Error> FusedFuture for Close<'a, Message, Error> {
+impl<'a, Transport, Message, Error, C> FusedFuture for Close<'a, Transport, Message, Error, C>
+where
+    C: Closer<Transport>,
+{
     fn is_terminated(&self) -> bool {
         self.terminated
     }
+}
+
+impl<'a, Transport, Message, Error, C> Unpin for Close<'a, Transport, Message, Error, C> where
+    C: Closer<Transport>
+{
 }

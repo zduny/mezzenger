@@ -15,7 +15,7 @@ pub mod sync;
 pub mod browser;
 
 pub trait Sender<Transport, Message, Error> {
-    fn send(transport: &Transport, message: Message) -> Result<(), mezzenger::Error<Error>>;
+    fn send(transport: &Transport, message: &Message) -> Result<(), mezzenger::Error<Error>>;
 }
 
 /// Future returned by [send] method.
@@ -26,7 +26,7 @@ where
     S: Sender<Transport, Message, Error>,
 {
     transport: &'a Transport,
-    message: Option<Message>,
+    message: Option<&'a Message>,
     _sender: PhantomData<S>,
     _error: PhantomData<Error>,
 }
@@ -38,7 +38,7 @@ where
     /// Create new future for [send] method.
     ///
     /// [send]: mezzenger::Send::send
-    pub fn new(transport: &'a Transport, message: Message) -> Self {
+    pub fn new(transport: &'a Transport, message: &'a Message) -> Self {
         Send {
             transport,
             message: Some(message),
@@ -61,7 +61,7 @@ where
 
     fn poll(mut self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<Self::Output> {
         if self.message.is_some() {
-            Poll::Ready(S::send(self.transport, self.message.take().unwrap()))
+            Poll::Ready(S::send(self.transport, &self.message.take().unwrap()))
         } else {
             Poll::Pending
         }
