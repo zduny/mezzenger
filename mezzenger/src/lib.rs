@@ -39,11 +39,14 @@ pub trait Send<Message> {
     type Error;
     type Output<'a>: Future<Output = Result<(), Error<Self::Error>>>
     where
-        Self: 'a;
+        Self: 'a,
+        Message: 'a;
 
     /// Send message.
     #[must_use]
-    fn send<'a>(&'a self, message: &Message) -> Self::Output<'a>;
+    fn send<'s, 'm>(&'s self, message: &'m Message) -> Self::Output<'s>
+    where
+        'm: 's;
 
     /// Sink for messages.
     fn sink(&self) -> Sink<Self, Message>
