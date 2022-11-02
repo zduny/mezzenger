@@ -1,8 +1,6 @@
-# mezzenger
+# mezzenger-tests
 
-Message passing infrastructure for Rust.
-
-This crate defines common interface for message transports.
+Server and client for testing Web Worker and WebSocket transports.
 
 https://crates.io/crates/mezzenger
 
