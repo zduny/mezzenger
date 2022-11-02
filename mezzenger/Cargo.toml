@@ -11,3 +11,4 @@ keywords = ["message", "message-passing", "communication"]
 
 [dependencies]
 futures = "0.3.25"
+pin-project = "1.0.12"
