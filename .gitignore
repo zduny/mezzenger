@@ -1,2 +1,11 @@
 /target/
+/mezzenger-tests/common/target/
+/mezzenger-tests/server/target/
+/mezzenger-tests/worker/target/
+/mezzenger-tests/client/target/
+/mezzenger-tests/www/worker_wasm.js
+/mezzenger-tests/www/worker_wasm_bg.wasm
+/mezzenger-tests/www/client.js
+/mezzenger-tests/www/client_bg.wasm
+/mezzenger-tests/tests_server
 Cargo.lock
