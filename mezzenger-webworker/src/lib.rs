@@ -1,17 +1,38 @@
-use std::{cell::RefCell, marker::PhantomData, rc::Rc};
+use std::{
+    cell::RefCell,
+    collections::VecDeque,
+    marker::PhantomData,
+    pin::Pin,
+    rc::Rc,
+    task::{Context, Poll, Waker},
+};
 
+use futures::{stream::FusedStream, Sink, Stream};
 use js_sys::Uint8Array;
 use js_utils::{
     event::{EventListener, When},
-    JsError,
+    JsError, Queue,
 };
 use kodec::{Decode, Encode};
-use mezzenger_common::{
-    rc::{Close, Receive, State},
-    Send,
-};
 use serde::{Deserialize, Serialize};
-use web_sys::{MessageEvent, Worker};
+use wasm_bindgen::{JsCast, JsValue};
+use web_sys::{DedicatedWorkerGlobalScope, EventTarget, MessageEvent, Worker};
+
+pub trait PostMessage {
+    fn post_message(&self, message: &JsValue) -> Result<(), JsValue>;
+}
+
+impl PostMessage for Worker {
+    fn post_message(&self, message: &JsValue) -> Result<(), JsValue> {
+        self.post_message(message)
+    }
+}
+
+impl PostMessage for DedicatedWorkerGlobalScope {
+    fn post_message(&self, message: &JsValue) -> Result<(), JsValue> {
+        self.post_message(message)
+    }
+}
 
 #[derive(Debug)]
 pub enum Error<SerializationError, DeserializationError> {
@@ -24,26 +45,86 @@ pub enum Error<SerializationError, DeserializationError> {
 
 #[derive(Debug, Serialize, Deserialize)]
 enum Wrapper<Message> {
+    Open,
     Message(Message),
     Close,
 }
 
-pub struct Transport<Codec, Incoming, Outgoing>
+struct State<Incoming, Error> {
+    incoming: VecDeque<Result<Incoming, Error>>,
+    waker: Option<Waker>,
+    closed: bool,
+}
+
+impl<Incoming, Error> State<Incoming, Error> {
+    fn new() -> Self {
+        State {
+            incoming: VecDeque::new(),
+            waker: None,
+            closed: false,
+        }
+    }
+
+    fn message(&mut self, message: Incoming) {
+        self.incoming.push_back(Ok(message));
+        self.wake();
+    }
+
+    fn error(&mut self, error: Error) {
+        self.incoming.push_back(Err(error));
+        self.wake();
+    }
+
+    fn close(&mut self) {
+        self.closed = true;
+        self.wake();
+    }
+
+    fn update_waker_with(&mut self, other: &Waker) {
+        if let Some(waker) = &self.waker {
+            if !waker.will_wake(other) {
+                self.waker = Some(other.clone());
+            }
+        } else {
+            self.waker = Some(other.clone());
+        }
+    }
+
+    fn wake(&mut self) {
+        if let Some(waker) = self.waker.take() {
+            waker.wake();
+        }
+    }
+}
+
+impl<Incoming, Error> Drop for State<Incoming, Error> {
+    fn drop(&mut self) {
+        if !self.closed {
+            self.close();
+        }
+    }
+}
+
+/// Transport for communication with [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API).
+pub struct Transport<T, Codec, Incoming, Outgoing>
 where
+    T: AsRef<EventTarget> + PostMessage,
     Codec: kodec::Codec,
 {
-    worker: Rc<Worker>,
+    target: Rc<T>,
     codec: Codec,
+    #[allow(clippy::type_complexity)]
     state: Rc<RefCell<State<Incoming, Error<<Codec as Encode>::Error, <Codec as Decode>::Error>>>>,
     buffer: RefCell<Vec<u8>>,
-    _message_listener: EventListener<Worker, MessageEvent>,
-    _error_listener: EventListener<Worker, MessageEvent>,
-    _message_error_listener: EventListener<Worker, MessageEvent>,
+    _message_listener: EventListener<T, MessageEvent>,
+    _error_listener: EventListener<T, MessageEvent>,
+    _message_error_listener: EventListener<T, MessageEvent>,
     _outgoing: PhantomData<Outgoing>,
 }
 
-impl<Codec, Incoming, Outgoing> Transport<Codec, Incoming, Outgoing>
+impl<T, Codec, Incoming, Outgoing> Transport<T, Codec, Incoming, Outgoing>
 where
+    T: AsRef<EventTarget> + PostMessage,
     Codec: 'static + kodec::Codec + Clone,
     Incoming: 'static,
     Outgoing: 'static + Serialize,
@@ -51,17 +132,27 @@ where
     <Codec as Decode>::Error: 'static,
     for<'de> Incoming: serde::de::Deserialize<'de>,
 {
-    pub fn new(worker: &Rc<Worker>, codec: Codec) -> Result<Self, JsError> {
-        let worker = worker.clone();
+    async fn new_inner(target: &Rc<T>, codec: Codec, is_worker: bool) -> Result<Self, JsError> {
+        let open_notifier = Rc::new(Queue::new());
+
+        let target = target.clone();
         let codec_clone = codec.clone();
         let state = Rc::new(RefCell::new(State::new()));
         let state_clone = state.clone();
-        let message_listener = worker.when("message", move |event: MessageEvent| {
+        let open_notifier_clone = Rc::downgrade(&open_notifier);
+        let message_listener = target.when("message", move |event: MessageEvent| {
             let array = Uint8Array::new(&event.data());
             let vector = array.to_vec();
             let result: Result<Wrapper<Incoming>, _> = codec_clone.decode(&vector[..]);
             match result {
                 Ok(message) => match message {
+                    Wrapper::Open => {
+                        if let Some(notifier) = open_notifier_clone.upgrade() {
+                            notifier.push(());
+                        } else {
+                            unreachable!("open message received twice!")
+                        }
+                    }
                     Wrapper::Message(message) => state_clone.borrow_mut().message(message),
                     Wrapper::Close => state_clone.borrow_mut().close(),
                 },
@@ -71,16 +162,16 @@ where
             }
         })?;
         let state_clone = state.clone();
-        let error_listener = worker.when("error", move |event: MessageEvent| {
+        let error_listener = target.when("error", move |event: MessageEvent| {
             state_clone.borrow_mut().error(Error::WorkerError(event));
         })?;
         let state_clone = state.clone();
-        let message_error_listener = worker.when("messageerror", move |event: MessageEvent| {
+        let message_error_listener = target.when("messageerror", move |event: MessageEvent| {
             state_clone.borrow_mut().error(Error::MessageError(event));
         })?;
         let buffer = RefCell::new(vec![]);
-        Ok(Transport {
-            worker,
+        let transport = Transport {
+            target,
             codec,
             state,
             buffer,
@@ -88,7 +179,17 @@ where
             _error_listener: error_listener,
             _message_error_listener: message_error_listener,
             _outgoing: PhantomData,
-        })
+        };
+
+        if is_worker {
+            let _ = transport.send_inner(Wrapper::Open);
+            open_notifier.pop().await;
+        } else {
+            open_notifier.pop().await;
+            let _ = transport.send_inner(Wrapper::Open);
+        }
+
+        Ok(transport)
     }
 
     fn send_inner(
@@ -98,23 +199,17 @@ where
         let mut buffer = self.buffer.borrow_mut();
         self.codec
             .encode(&mut *buffer, &message)
-            .map_err(|error| Error::SerializationError(error))?;
+            .map_err(Error::SerializationError)?;
         let js_array = Uint8Array::from(&buffer[..]);
-        self.worker
+        self.target
             .post_message(&js_array)
             .map_err(|error| Error::SendingError(error.into()))?;
+        buffer.clear();
         Ok(())
     }
 }
 
-pub struct Sender {}
-
-impl<Codec, Incoming, Outgoing>
-    mezzenger_common::Sender<
-        Transport<Codec, Incoming, Outgoing>,
-        Outgoing,
-        Error<<Codec as Encode>::Error, <Codec as Decode>::Error>,
-    > for Sender
+impl<Codec, Incoming, Outgoing> Transport<Worker, Codec, Incoming, Outgoing>
 where
     Codec: 'static + kodec::Codec + Clone,
     Incoming: 'static,
@@ -123,105 +218,126 @@ where
     <Codec as Decode>::Error: 'static,
     for<'de> Incoming: serde::de::Deserialize<'de>,
 {
-    fn send(
-        transport: &Transport<Codec, Incoming, Outgoing>,
-        message: &Outgoing,
-    ) -> Result<(), mezzenger::Error<Error<<Codec as Encode>::Error, <Codec as Decode>::Error>>>
-    {
-        use mezzenger::Close;
-        if transport.is_closed() {
+    /// Create new transport for communication with worker.
+    pub async fn new(worker: &Rc<Worker>, codec: Codec) -> Result<Self, JsError> {
+        Transport::new_inner(worker, codec, false).await
+    }
+}
+
+impl<Codec, Incoming, Outgoing> Transport<DedicatedWorkerGlobalScope, Codec, Incoming, Outgoing>
+where
+    Codec: 'static + kodec::Codec + Clone,
+    Incoming: 'static,
+    Outgoing: 'static + Serialize,
+    <Codec as Encode>::Error: 'static,
+    <Codec as Decode>::Error: 'static,
+    for<'de> Incoming: serde::de::Deserialize<'de>,
+{
+    /// Create new transport inside worker.
+    ///
+    /// Will panic if called outside worker scope.
+    pub async fn new_in_worker(codec: Codec) -> Result<Self, JsError> {
+        let global = Rc::new(
+            js_sys::global()
+                .dyn_into::<DedicatedWorkerGlobalScope>()
+                .unwrap(),
+        );
+        Transport::new_inner(&global, codec, true).await
+    }
+}
+
+impl<T, Codec, Incoming, Outgoing> Sink<&Outgoing> for Transport<T, Codec, Incoming, Outgoing>
+where
+    T: AsRef<EventTarget> + PostMessage,
+    Codec: 'static + kodec::Codec + Clone,
+    Incoming: 'static,
+    Outgoing: 'static + Serialize,
+    <Codec as Encode>::Error: 'static,
+    <Codec as Decode>::Error: 'static,
+    for<'de> Incoming: serde::de::Deserialize<'de>,
+{
+    type Error = mezzenger::Error<Error<<Codec as Encode>::Error, <Codec as Decode>::Error>>;
+
+    fn poll_ready(self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
+        if self.state.borrow().closed {
+            Poll::Ready(Err(mezzenger::Error::Closed))
+        } else {
+            Poll::Ready(Ok(()))
+        }
+    }
+
+    fn start_send(self: Pin<&mut Self>, item: &Outgoing) -> Result<(), Self::Error> {
+        if self.state.borrow().closed {
             Err(mezzenger::Error::Closed)
         } else {
-            transport
-                .send_inner(Wrapper::Message(message))
-                .map_err(|error| mezzenger::Error::Other(error))?;
-            Ok(())
+            self.send_inner(Wrapper::Message(item))
+                .map_err(mezzenger::Error::Other)
+        }
+    }
+
+    fn poll_flush(
+        self: Pin<&mut Self>,
+        _cx: &mut Context<'_>,
+    ) -> std::task::Poll<Result<(), Self::Error>> {
+        if self.state.borrow().closed {
+            Poll::Ready(Err(mezzenger::Error::Closed))
+        } else {
+            Poll::Ready(Ok(()))
+        }
+    }
+
+    fn poll_close(self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
+        if self.state.borrow().closed {
+            Poll::Ready(Err(mezzenger::Error::Closed))
+        } else {
+            let _ = self.send_inner(Wrapper::Close);
+            self.state.borrow_mut().close();
+            Poll::Ready(Ok(()))
         }
     }
 }
 
-impl<Codec, Incoming, Outgoing> mezzenger::Send<Outgoing> for Transport<Codec, Incoming, Outgoing>
+impl<T, Codec, Incoming, Outgoing> Stream for Transport<T, Codec, Incoming, Outgoing>
 where
-    Codec: 'static + kodec::Codec + Clone,
-    Incoming: 'static,
-    Outgoing: 'static + Serialize,
-    <Codec as Encode>::Error: 'static,
-    <Codec as Decode>::Error: 'static,
-    for<'de> Incoming: serde::de::Deserialize<'de>,
-{
-    type Error = Error<<Codec as Encode>::Error, <Codec as Decode>::Error>;
-
-    type Output<'a> = Send<'a, Transport<Codec, Incoming, Outgoing>, Outgoing, Error<<Codec as Encode>::Error, <Codec as Decode>::Error>, Sender>
-    where
-        Self: 'a;
-
-    fn send<'s, 'm>(&'s self, message: &'m Outgoing) -> Self::Output<'s>
-    where
-        'm: 's,
-    {
-        Send::new(&self, message)
-    }
-}
-
-impl<Codec, Incoming, Outgoing> mezzenger::Receive<Incoming>
-    for Transport<Codec, Incoming, Outgoing>
-where
+    T: AsRef<EventTarget> + PostMessage,
     Codec: kodec::Codec,
 {
-    type Error = Error<<Codec as Encode>::Error, <Codec as Decode>::Error>;
+    type Item = Result<Incoming, Error<<Codec as Encode>::Error, <Codec as Decode>::Error>>;
 
-    type Output<'a> = Receive<'a, Incoming, Error<<Codec as Encode>::Error, <Codec as Decode>::Error>>
-    where
-        Self: 'a;
-
-    fn receive(&self) -> Self::Output<'_> {
-        Receive::new(&self.state)
+    fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
+        let mut state = self.state.borrow_mut();
+        if state.closed && state.incoming.is_empty() {
+            Poll::Ready(None)
+        } else if let Some(item) = state.incoming.pop_front() {
+            Poll::Ready(Some(item))
+        } else {
+            state.update_waker_with(cx.waker());
+            Poll::Pending
+        }
     }
 }
 
-pub struct Closer {}
-
-impl<Codec, Incoming, Outgoing> mezzenger_common::rc::Closer<Transport<Codec, Incoming, Outgoing>>
-    for Closer
+impl<T, Codec, Incoming, Outgoing> FusedStream for Transport<T, Codec, Incoming, Outgoing>
 where
-    Codec: 'static + kodec::Codec + Clone,
-    Incoming: 'static,
-    Outgoing: 'static + Serialize,
-    <Codec as Encode>::Error: 'static,
-    <Codec as Decode>::Error: 'static,
-    for<'de> Incoming: serde::de::Deserialize<'de>,
+    T: AsRef<EventTarget> + PostMessage,
+    Codec: kodec::Codec,
 {
-    fn close(transport: &Transport<Codec, Incoming, Outgoing>) {
-        let _ = transport.send_inner(Wrapper::Close);
+    fn is_terminated(&self) -> bool {
+        let state = self.state.borrow();
+        state.closed && state.incoming.is_empty()
     }
 }
 
-impl<Codec, Incoming, Outgoing> mezzenger::Close for Transport<Codec, Incoming, Outgoing>
+impl<T, Codec, Incoming, Outgoing> mezzenger::Reliable for Transport<T, Codec, Incoming, Outgoing>
 where
-    Codec: 'static + kodec::Codec + Clone,
-    Incoming: 'static,
-    Outgoing: 'static + Serialize,
-    <Codec as Encode>::Error: 'static,
-    <Codec as Decode>::Error: 'static,
-    for<'de> Incoming: serde::de::Deserialize<'de>,
-{
-    type Output<'a> = Close<'a, Transport<Codec, Incoming, Outgoing>, Incoming, Error<<Codec as Encode>::Error, <Codec as Decode>::Error>, Closer> where Self: 'a;
-
-    fn close(&self) -> Self::Output<'_> {
-        Close::new(&self, &self.state)
-    }
-
-    fn is_closed(&self) -> bool {
-        self.state.borrow().closed
-    }
-}
-
-impl<Codec, Incoming, Outgoing> mezzenger::Reliable for Transport<Codec, Incoming, Outgoing> where
-    Codec: kodec::Codec
+    T: AsRef<EventTarget> + PostMessage,
+    Codec: kodec::Codec,
 {
 }
 
-impl<Codec, Incoming, Outgoing> mezzenger::Order for Transport<Codec, Incoming, Outgoing> where
-    Codec: kodec::Codec
+impl<T, Codec, Incoming, Outgoing> mezzenger::Order for Transport<T, Codec, Incoming, Outgoing>
+where
+    T: AsRef<EventTarget> + PostMessage,
+    Codec: kodec::Codec,
 {
 }
