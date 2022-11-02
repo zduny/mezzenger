@@ -1,8 +1,6 @@
 [workspace]
 members = [
     "mezzenger",
-    "mezzenger-common",
-    "mezzenger-loopback",
     "mezzenger-tcp",
     "mezzenger-udp",
     "mezzenger-http",
@@ -10,3 +8,4 @@ members = [
     "mezzenger-websocket",
     "mezzenger-webrtc-datachannel",
 ]
+exclude = ["mezzenger-tests"]
