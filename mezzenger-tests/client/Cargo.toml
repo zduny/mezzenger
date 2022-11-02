@@ -1,9 +1,9 @@
 [package]
-name = "worker"
+name = "client"
 version = "0.1.0"
 authors = ["zduny <dzduniak@gmail.com>"]
 edition = "2021"
-description = "Tests worker."
+description = "Tests client."
 repository = "https://github.com/zduny/mezzenger"
 
 [profile.release]
@@ -18,6 +18,7 @@ wasm-bindgen = "0.2.83"
 wasm-bindgen-futures = "0.4.33"
 futures = "0.3.25"
 js-utils = "0.1.1"
+web-sys = { version = "0.3.60", features = ["Worker"] }
 kodec = { version = "0.1.0", features = ["binary"] }
 mezzenger = { path = "../../mezzenger" }
 mezzenger-webworker = { path = "../../mezzenger-webworker" }

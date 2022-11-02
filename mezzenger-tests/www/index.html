@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <link rel="icon" type="image/svg" href="favicon.svg">
+  <title>Mezzenger tests</title>
+</head>
+
+<body>
+  <p>
+    Open developer tools to see tests results.
+  </p>
+  <script type="module">
+    import init from './client.js';
+
+    async function run() {
+      await init();
+    }
+
+    run();
+  </script>
+  <noscript>
+    This page contains webassembly and javascript content,
+    please enable javascript in your browser.
+  </noscript>
+</body>
+
+</html>

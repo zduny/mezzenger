@@ -1,0 +1,13 @@
+[package]
+name = "server"
+version = "0.1.0"
+authors = ["zduny <dzduniak@gmail.com>"]
+edition = "2021"
+
+[dependencies]
+common = { path = "../common" }
+anyhow = "1.0.66"
+tokio = { version = "1.21.2", features = ["full"] }
+tracing = "0.1.37"
+tracing-subscriber = "0.3.16"
+warp = "0.3.3"
