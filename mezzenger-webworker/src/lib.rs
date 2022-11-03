@@ -1,3 +1,6 @@
+//! Transport for communication with 
+//! [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API).
+
 use std::{
     cell::RefCell,
     collections::VecDeque,
@@ -105,7 +108,8 @@ impl<Incoming, Error> Drop for State<Incoming, Error> {
     }
 }
 
-/// Transport for communication with [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API).
+/// Transport for communication with 
+/// [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API).
 pub struct Transport<T, Codec, Incoming, Outgoing>
 where
     T: AsRef<EventTarget> + PostMessage,

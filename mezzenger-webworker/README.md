@@ -1,10 +1,7 @@
-# mezzenger
+# mezzenger-webworker
 
-Message passing infrastructure for Rust.
+Transport for communicating with [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API).
 
-This crate defines common interface for message transports.
-
-https://crates.io/crates/mezzenger
+https://crates.io/crates/mezzenger-webworker
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/O5O31JYZ4)
-
