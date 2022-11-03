@@ -3,7 +3,7 @@ name = "mezzenger-webworker"
 version = "0.1.0"
 authors = ["zduny <dzduniak@gmail.com>"]
 edition = "2021"
-description = "Mezzenger transport for communicating with web workers."
+description = "Transport for communicating with web workers."
 license = "Apache-2.0"
 repository = "https://github.com/zduny/mezzenger"
 homepage = "https://github.com/zduny/mezzenger/tree/master/mezzenger-webworker"
@@ -16,7 +16,7 @@ serde = { version = "1.0.147", features = ["derive"] }
 mezzenger = { path = "../mezzenger" }
 kodec = "0.1.0"
 futures = "0.3.25"
-js-utils = { version = "0.1.1", default-features = false, features = ["queue", "event"] }
+js-utils = { version = "0.1.2", default-features = false, features = ["queue", "event"] }
 js-sys = "0.3.60"
 
 [dependencies.web-sys]
