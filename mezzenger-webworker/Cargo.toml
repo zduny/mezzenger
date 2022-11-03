@@ -24,5 +24,6 @@ version = "0.3.60"
 features = [
     "Worker",
     "DedicatedWorkerGlobalScope",
+    "Event",
     "MessageEvent"
 ]

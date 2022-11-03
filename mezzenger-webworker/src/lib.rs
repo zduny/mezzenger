@@ -1,4 +1,4 @@
-//! Transport for communication with 
+//! Transport for communication with
 //! [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API).
 
 use std::{
@@ -19,7 +19,7 @@ use js_utils::{
 use kodec::{Decode, Encode};
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::{JsCast, JsValue};
-use web_sys::{DedicatedWorkerGlobalScope, EventTarget, MessageEvent, Worker};
+use web_sys::{DedicatedWorkerGlobalScope, Event, EventTarget, MessageEvent, Worker};
 
 pub trait PostMessage {
     fn post_message(&self, message: &JsValue) -> Result<(), JsValue>;
@@ -42,7 +42,7 @@ pub enum Error<SerializationError, DeserializationError> {
     SendingError(JsError),
     SerializationError(SerializationError),
     DeserializationError(DeserializationError),
-    WorkerError(MessageEvent),
+    WorkerError(Event),
     MessageError(MessageEvent),
 }
 
@@ -108,7 +108,7 @@ impl<Incoming, Error> Drop for State<Incoming, Error> {
     }
 }
 
-/// Transport for communication with 
+/// Transport for communication with
 /// [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API).
 pub struct Transport<T, Codec, Incoming, Outgoing>
 where
@@ -121,7 +121,7 @@ where
     state: Rc<RefCell<State<Incoming, Error<<Codec as Encode>::Error, <Codec as Decode>::Error>>>>,
     buffer: RefCell<Vec<u8>>,
     _message_listener: EventListener<T, MessageEvent>,
-    _error_listener: EventListener<T, MessageEvent>,
+    _error_listener: EventListener<T, Event>,
     _message_error_listener: EventListener<T, MessageEvent>,
     _outgoing: PhantomData<Outgoing>,
 }
@@ -166,7 +166,7 @@ where
             }
         })?;
         let state_clone = state.clone();
-        let error_listener = target.when("error", move |event: MessageEvent| {
+        let error_listener = target.when("error", move |event: Event| {
             state_clone.borrow_mut().error(Error::WorkerError(event));
         })?;
         let state_clone = state.clone();
