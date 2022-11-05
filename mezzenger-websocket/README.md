@@ -1,8 +1,11 @@
-# mezzenger
+# mezzenger-websocket
 
-Message passing infrastructure for Rust.
+Transport for communicating over [WebSocket](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket).
 
-This crate defines common interface for message transports.
+Provides implementations for:
+- browsers,
+- native applications (through [tokio-tungstenite](https://github.com/snapview/tokio-tungstenite)),
+- [warp](https://github.com/seanmonstar/warp) servers (enabled with `warp` feature).
 
 https://crates.io/crates/mezzenger
 

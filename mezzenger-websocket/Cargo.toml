@@ -8,6 +8,40 @@ license = "Apache-2.0"
 repository = "https://github.com/zduny/mezzenger"
 homepage = "https://github.com/zduny/mezzenger/tree/master/mezzenger-websocket"
 documentation = "https://docs.rs/mezzenger-websocket/"
-keywords = ["message", "message-passing", "communication", "mezzenger", "websocket"]
+keywords = [
+    "message",
+    "message-passing",
+    "communication",
+    "mezzenger",
+    "websocket"
+]
+
+[features]
+default = ["native", "wasm"] 
+native = ["tokio-tungstenite"]
+wasm = ["wasm-bindgen", "js-utils", "web-sys"]
 
 [dependencies]
+mezzenger = { path = "../mezzenger" }
+serde = { version = "1.0.147", features = ["derive"] }
+kodec = "0.1.0"
+futures = "0.3.25"
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+pin-project = "1.0.12"
+tungstenite = "0.17.3"
+tokio-tungstenite = { version = "0.17.2", optional = true }
+warp = { version = "0.3.3", optional = true }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen = { version = "0.2.83", optional = true }
+js-utils = { version = "0.1.2", default-features = false, features = [
+    "event"
+], optional = true }
+js-sys = "0.3.60"
+web-sys = { version = "0.3.60", features = [
+    "WebSocket",
+    "Event",
+    "MessageEvent",
+    "CloseEvent",
+], optional = true }
