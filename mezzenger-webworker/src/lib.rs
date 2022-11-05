@@ -4,6 +4,7 @@
 use std::{
     cell::RefCell,
     collections::VecDeque,
+    fmt::{Debug, Display},
     marker::PhantomData,
     pin::Pin,
     rc::Rc,
@@ -44,6 +45,33 @@ pub enum Error<SerializationError, DeserializationError> {
     DeserializationError(DeserializationError),
     WorkerError(Event),
     MessageError(MessageEvent),
+}
+
+impl<SerializationError, DeserializationError> Display
+    for Error<SerializationError, DeserializationError>
+where
+    SerializationError: Display,
+    DeserializationError: Display,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Error::SendingError(error) => write!(f, "failed to send message: {error}"),
+            Error::SerializationError(error) => write!(f, "failed to serialize message: {error}"),
+            Error::DeserializationError(error) => {
+                write!(f, "failed to deserialize message: {error}")
+            }
+            Error::WorkerError(error) => write!(f, "error occurred in worker: {:?}", error),
+            Error::MessageError(error) => write!(f, "message error occurred: {:?}", error),
+        }
+    }
+}
+
+impl<SerializationError, DeserializationError> std::error::Error
+    for Error<SerializationError, DeserializationError>
+where
+    SerializationError: Debug + Display,
+    DeserializationError: Debug + Display,
+{
 }
 
 #[derive(Debug, Serialize, Deserialize)]
