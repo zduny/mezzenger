@@ -131,8 +131,12 @@ where
     }
 }
 
-#[pin_project]
 /// Stream of messages.
+/// 
+/// Returned by [messages] function.
+/// 
+/// [messages]: self::Messages::messages
+#[pin_project]
 pub struct MessageStream<T, F> {
     #[pin]
     stream: T,
