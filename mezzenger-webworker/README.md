@@ -1,6 +1,6 @@
 # mezzenger-webworker
 
-Transport for communicating with [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API).
+Transport for communication with [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API).
 
 https://crates.io/crates/mezzenger-webworker
 
