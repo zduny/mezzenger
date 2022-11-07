@@ -11,3 +11,14 @@ https://crates.io/crates/mezzenger
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/O5O31JYZ4)
 
+## usage
+
+See [rust-webapp-template](https://github.com/zduny/rust-webapp-template).
+
+## see also
+
+[mezzenger](https://github.com/zduny/mezzenger)
+
+[rust-webapp-template](https://github.com/zduny/rust-webapp-template)
+
+[The WebSocket API (WebSockets)](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API)
