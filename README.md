@@ -24,9 +24,11 @@ See [rust-webapp-template](https://github.com/zduny/rust-webapp-template).
 
 Following utils are on roadmap for development:
 
-- `mezzegner-reliabler` - wrapper turning unreliable transport into reliable one (by acknowledging and resending lost messages after timeout),
-- `mezzenger-orderer`   - wrapper turning unordered (not guaranteeing message order) but reliable transport into ordered one,
-- `mezzenger-last-only` - wrapper turning unordered (not guaranteeing message order) transport into ordered one, but discarding old messages - potentially useful when user doesn't care about old messages (for example multiplayer video games),
+| Name                       | Description                                                                                                                                                                                                                        |
+|:---------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `mezzegner-reliabler`      | Wrapper turning unreliable transport into reliable one <br> (by acknowledging and resending lost messages after timeout).                                                                                                          |
+| `mezzenger-orderer`        | Wrapper turning unordered (not guaranteeing message order) but reliable transport into ordered one.                                                                                                                                |
+| `mezzenger-last-only`      | Wrapper turning unordered (not guaranteeing message order) transport into ordered one, <br> but discarding old messages - potentially useful when user doesn't care about old messages <br> (for example multiplayer video games). |
 
 ## see also
 
