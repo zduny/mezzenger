@@ -132,9 +132,9 @@ where
 }
 
 /// Stream of messages.
-/// 
+///
 /// Returned by [messages] function.
-/// 
+///
 /// [messages]: self::Messages::messages
 #[pin_project]
 pub struct MessageStream<T, F> {
@@ -156,9 +156,7 @@ where
             Poll::Ready(item) => {
                 if let Some(item) = item {
                     match item {
-                        Ok(message) => {
-                            Poll::Ready(Some(message))  
-                        },
+                        Ok(message) => Poll::Ready(Some(message)),
                         Err(error) => {
                             (self.error_callback)(error);
                             Poll::Pending
