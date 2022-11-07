@@ -5,7 +5,7 @@ use std::{
     task::{Context, Poll},
 };
 
-use futures::{Stream, StreamExt};
+use futures::{stream::FusedStream, Stream, StreamExt};
 use kodec::Decode;
 use pin_project::pin_project;
 use tungstenite::Message;
@@ -49,7 +49,24 @@ where
     #[pin]
     inner: S,
     codec: Codec,
+    terminated: bool,
     _incoming: PhantomData<Incoming>,
+}
+
+impl<S, Codec, Incoming> Receiver<S, Codec, Incoming>
+where
+    S: Stream<Item = Result<Message, tungstenite::Error>>,
+    Codec: kodec::Decode,
+{
+    /// Create new receiver wrapping a provided `stream`.
+    pub fn new(stream: S, codec: Codec) -> Self {
+        Receiver {
+            inner: stream,
+            codec,
+            terminated: false,
+            _incoming: PhantomData,
+        }
+    }
 }
 
 impl<S, Codec, Incoming> Stream for Receiver<S, Codec, Incoming>
@@ -75,16 +92,40 @@ where
                                     }
                                 }
                             }
+                            Message::Close(_) => {
+                                self.terminated = true;
+                                Poll::Ready(None)
+                            }
                             _ => Poll::Pending,
                         },
-                        Err(error) => Poll::Ready(Some(Err(Error::TungsteniteError(error)))),
+                        Err(error) => match &error {
+                            tungstenite::Error::Protocol(
+                                tungstenite::error::ProtocolError::ResetWithoutClosingHandshake,
+                            ) => {
+                                self.terminated = true;
+                                Poll::Ready(None)
+                            }
+                            _ => Poll::Ready(Some(Err(Error::TungsteniteError(error)))),
+                        },
                     }
                 } else {
+                    self.terminated = true;
                     Poll::Ready(None)
                 }
             }
             Poll::Pending => Poll::Pending,
         }
+    }
+}
+
+impl<S, Codec, Incoming> FusedStream for Receiver<S, Codec, Incoming>
+where
+    S: Stream<Item = Result<Message, tungstenite::Error>> + Unpin,
+    Codec: kodec::Decode,
+    for<'de> Incoming: serde::de::Deserialize<'de>,
+{
+    fn is_terminated(&self) -> bool {
+        self.terminated
     }
 }
 

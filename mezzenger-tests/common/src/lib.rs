@@ -34,6 +34,7 @@ pub fn messages1_all() -> Vec<Message1> {
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub enum Message2 {
+    Welcome { native_client: bool },
     Float(f32),
     String(String),
     Struct { a: i32, b: String },

@@ -60,8 +60,8 @@ where
             Error::DeserializationError(error) => {
                 write!(f, "failed to deserialize message: {error}")
             }
-            Error::WorkerError(error) => write!(f, "error occurred in worker: {:?}", error),
-            Error::MessageError(error) => write!(f, "message error occurred: {:?}", error),
+            Error::WorkerError(error) => write!(f, "error occurred in worker: {error:?}"),
+            Error::MessageError(error) => write!(f, "message error occurred: {error:?}"),
         }
     }
 }

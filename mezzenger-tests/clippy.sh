@@ -20,3 +20,8 @@ echo "\nLinting client..."
 cd client
 cargo clippy
 cd ..
+
+echo "\nLinting native client..."
+cd client-native
+cargo clippy
+cd ..

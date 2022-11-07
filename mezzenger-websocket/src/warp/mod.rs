@@ -3,4 +3,6 @@
 //! from [warp](https://github.com/seanmonstar/warp) servers.
 
 pub mod receiver;
+pub use receiver::Receiver;
 pub mod sender;
+pub use sender::Sender;

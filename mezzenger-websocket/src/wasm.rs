@@ -4,6 +4,7 @@
 use std::{
     cell::RefCell,
     collections::VecDeque,
+    fmt::{Debug, Display},
     marker::PhantomData,
     pin::Pin,
     rc::Rc,
@@ -18,7 +19,7 @@ use js_utils::{
 };
 use kodec::{Decode, Encode};
 use serde::Serialize;
-use web_sys::{CloseEvent, Event, MessageEvent, WebSocket};
+use web_sys::{BinaryType, CloseEvent, Event, MessageEvent, WebSocket};
 
 #[derive(Debug)]
 pub enum Error<SerializationError, DeserializationError> {
@@ -43,7 +44,7 @@ where
             Error::DeserializationError(error) => {
                 write!(f, "failed to deserialize message: {error}")
             }
-            Error::WebSocketError(error) => write!(f, "WebSocket error occurred: {:?}", error),
+            Error::WebSocketError(error) => write!(f, "WebSocket error occurred: {error:?}"),
         }
     }
 }
@@ -139,6 +140,7 @@ where
 {
     /// Create new transport for WebSocket without waiting for `open` event.
     pub fn new_assuming_open(web_socket: &Rc<WebSocket>, codec: Codec) -> Result<Self, JsError> {
+        web_socket.set_binary_type(BinaryType::Arraybuffer);
         let web_socket = web_socket.clone();
         let codec_clone = codec.clone();
         let state = Rc::new(RefCell::new(State::new()));

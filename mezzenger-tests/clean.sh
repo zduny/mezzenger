@@ -19,6 +19,10 @@ cargo clean
 rm -rf pkg
 cd ..
 
+cd client-native
+cargo clean
+cd ..
+
 cd www
 rm -f www/worker_wasm.js
 rm -f www/worker_wasm_bg.wasm

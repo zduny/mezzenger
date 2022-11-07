@@ -49,6 +49,21 @@ where
     _outgoing: PhantomData<Outgoing>,
 }
 
+impl<S, Codec, Outgoing> Sender<S, Codec, Outgoing>
+where
+    S: Sink<Message, Error = tungstenite::Error>,
+    Codec: kodec::Encode,
+{
+    /// Create new sender wrapping a provided `sink`.
+    pub fn new(sink: S, codec: Codec) -> Self {
+        Self {
+            inner: sink,
+            codec,
+            _outgoing: PhantomData,
+        }
+    }
+}
+
 impl<S, Codec, Outgoing> Sink<&Outgoing> for Sender<S, Codec, Outgoing>
 where
     S: Sink<Message, Error = tungstenite::Error> + Unpin,

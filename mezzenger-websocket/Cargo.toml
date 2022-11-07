@@ -17,7 +17,7 @@ keywords = [
 ]
 
 [features]
-default = ["native", "wasm"] 
+default = ["native", "wasm", "warp"] 
 native = ["tokio-tungstenite"]
 wasm = ["wasm-bindgen", "js-utils", "web-sys"]
 
@@ -40,7 +40,9 @@ js-utils = { version = "0.1.2", default-features = false, features = [
 ], optional = true }
 js-sys = "0.3.60"
 web-sys = { version = "0.3.60", features = [
+    "Location",
     "WebSocket",
+    "BinaryType",
     "Event",
     "MessageEvent",
     "CloseEvent",

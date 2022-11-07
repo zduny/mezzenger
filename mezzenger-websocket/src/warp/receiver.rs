@@ -5,7 +5,7 @@ use std::{
     task::{Context, Poll},
 };
 
-use futures::{Stream, StreamExt};
+use futures::{stream::FusedStream, Stream, StreamExt};
 use kodec::Decode;
 use pin_project::pin_project;
 use warp::ws::Message;
@@ -49,7 +49,24 @@ where
     #[pin]
     inner: S,
     codec: Codec,
+    terminated: bool,
     _incoming: PhantomData<Incoming>,
+}
+
+impl<S, Codec, Incoming> Receiver<S, Codec, Incoming>
+where
+    S: Stream<Item = Result<Message, warp::Error>>,
+    Codec: kodec::Decode,
+{
+    /// Create new receiver wrapping a provided `stream`.
+    pub fn new(stream: S, codec: Codec) -> Self {
+        Receiver {
+            inner: stream,
+            codec,
+            terminated: false,
+            _incoming: PhantomData,
+        }
+    }
 }
 
 impl<S, Codec, Incoming> Stream for Receiver<S, Codec, Incoming>
@@ -75,18 +92,52 @@ where
                                         Poll::Ready(Some(Err(Error::DeserializationError(error))))
                                     }
                                 }
+                            } else if message.is_close() {
+                                self.terminated = true;
+                                Poll::Ready(None)
                             } else {
                                 Poll::Pending
                             }
                         }
-                        Err(error) => Poll::Ready(Some(Err(Error::WarpError(error)))),
+                        Err(warp_error) => {
+                            use std::error::Error;
+                            if let Some(error) = warp_error.source() {
+                                if let Some(tungstenite_error) =
+                                    error.downcast_ref::<tungstenite::Error>()
+                                {
+                                    match tungstenite_error {
+                                        tungstenite::Error::Protocol(tungstenite::error::ProtocolError::ResetWithoutClosingHandshake) => {
+                                            self.terminated = true;
+                                            Poll::Ready(None)
+                                        },
+                                        _ => Poll::Ready(Some(Err(self::Error::WarpError(warp_error)))),
+                                    }
+                                } else {
+                                    Poll::Ready(Some(Err(self::Error::WarpError(warp_error))))
+                                }
+                            } else {
+                                Poll::Ready(Some(Err(self::Error::WarpError(warp_error))))
+                            }
+                        }
                     }
                 } else {
+                    self.terminated = true;
                     Poll::Ready(None)
                 }
             }
             Poll::Pending => Poll::Pending,
         }
+    }
+}
+
+impl<S, Codec, Incoming> FusedStream for Receiver<S, Codec, Incoming>
+where
+    S: Stream<Item = Result<Message, warp::Error>> + Unpin,
+    Codec: kodec::Decode,
+    for<'de> Incoming: serde::de::Deserialize<'de>,
+{
+    fn is_terminated(&self) -> bool {
+        self.terminated
     }
 }
 

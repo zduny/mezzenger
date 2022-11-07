@@ -21,4 +21,9 @@ cd client
 cargo fmt
 cd ..
 
+echo "Formatting native client..."
+cd client-native
+cargo fmt
+cd ..
+
 echo "Done."
