@@ -12,8 +12,8 @@ https://crates.io/crates/mezzenger
 |:-------------------------------------------------------------------------------------------------------------|:------------:|:-------------:|:-----------------------------------------------------------------------------------------------------------------------|
 | [mezzenger-tcp](https://github.com/zduny/mezzenger/tree/master/mezzenger-tcp)                                | *to do*      | *to do*       | Transport over [Tokio](https://tokio.rs/) TCP implementation.                                                          |
 | [mezzenger-udp](https://github.com/zduny/mezzenger/tree/master/mezzenger-udp)                                | *to do*      | *to do*       | Transport over [Tokio](https://tokio.rs/) UDP implementation.                                                          |
-| [mezzenger-websocket](https://github.com/zduny/mezzenger/tree/master/mezzenger-websocket)                    | ✅           | ✅             | Transport over [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API).                          |
 | [mezzenger-webworker](https://github.com/zduny/mezzenger/tree/master/mezzenger-webworker)                    | *N.A.*       | ✅             | Communication with [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers).  |
+| [mezzenger-websocket](https://github.com/zduny/mezzenger/tree/master/mezzenger-websocket)                    | ✅           | ✅             | Transport over [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API).                          |
 | [mezzenger-webrtc-datachannel](https://github.com/zduny/mezzenger/tree/master/mezzenger-webrtc-datachannel)  | *to do*      | *wip*         | Transport over [WebRTC data channel](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Using_data_channels). |
 
 ## example
