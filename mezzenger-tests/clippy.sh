@@ -18,7 +18,7 @@ cd ..
 
 echo "\nLinting client..."
 cd client
-cargo clippy
+cargo clippy --target=wasm32-unknown-unknown
 cd ..
 
 echo "\nLinting native client..."

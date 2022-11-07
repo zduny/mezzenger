@@ -35,7 +35,7 @@ pub async fn test_websocket() {
 
     console_log!("Opening WebSocket...");
     let host = window().location().host().expect("couldn't extract host from location");
-    let url = format!("ws://{}/ws", host);
+    let url = format!("ws://{host}/ws");
     let web_socket = Rc::new(WebSocket::new(&url).unwrap());
     let mut transport: Transport<Codec, common::Message1, common::Message2> =
         Transport::new(&web_socket, Codec::default()).await.unwrap();
