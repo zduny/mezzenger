@@ -9,4 +9,5 @@
 /mezzenger-tests/www/client.js
 /mezzenger-tests/www/client_bg.wasm
 /mezzenger-tests/tests_server
+/mezzenger-tests/tests_client
 Cargo.lock
