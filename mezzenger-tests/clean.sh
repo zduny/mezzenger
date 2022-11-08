@@ -31,3 +31,4 @@ rm -f client_bg.wasm
 cd ..
 
 rm -f tests_server
+rm -f tests_client
