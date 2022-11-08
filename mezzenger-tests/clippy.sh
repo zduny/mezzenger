@@ -13,7 +13,7 @@ cd ..
 
 echo "\nLinting worker..."
 cd worker
-cargo clippy
+cargo clippy --target=wasm32-unknown-unknown
 cd ..
 
 echo "\nLinting client..."
