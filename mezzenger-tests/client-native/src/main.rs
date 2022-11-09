@@ -9,7 +9,7 @@ use kodec::binary::Codec;
 use tokio::time::sleep;
 use mezzenger::{Receive, Messages};
 
-/// Simple program to greet a person
+/// Mezzenger tests native client
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
