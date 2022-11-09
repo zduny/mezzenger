@@ -107,7 +107,7 @@ where
     /// Calls a callback when error occurs.
     fn messages_with_error_callback<F>(self, error_callback: F) -> MessageStream<Self, F>
     where
-        F: Fn(Error);
+        F: FnMut(Error);
 
     /// Message stream with filtered out errors.
     fn messages(self) -> MessageStream<Self, fn(Error) -> ()> {
@@ -121,7 +121,7 @@ where
 {
     fn messages_with_error_callback<F>(self, error_callback: F) -> MessageStream<Self, F>
     where
-        F: Fn(Error),
+        F: FnMut(Error),
     {
         MessageStream {
             stream: self,
@@ -147,7 +147,7 @@ pub struct MessageStream<T, F> {
 impl<T, F, Message, Error> Stream for MessageStream<T, F>
 where
     T: Stream<Item = Result<Message, Error>> + Unpin,
-    F: Fn(Error),
+    F: FnMut(Error),
 {
     type Item = Message;
 
@@ -175,7 +175,7 @@ where
 impl<T, F, Message, Error> FusedStream for MessageStream<T, F>
 where
     T: Stream<Item = Result<Message, Error>> + Unpin,
-    F: Fn(Error),
+    F: FnMut(Error),
 {
     fn is_terminated(&self) -> bool {
         self.terminated
