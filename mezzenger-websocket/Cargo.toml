@@ -22,7 +22,7 @@ native = ["tokio-tungstenite"]
 wasm = ["wasm-bindgen", "js-utils", "web-sys"]
 
 [dependencies]
-mezzenger = { path = "../mezzenger" }
+mezzenger = "0.1.0"
 serde = { version = "1.0.147", features = ["derive"] }
 kodec = "0.1.0"
 futures = "0.3.25"
