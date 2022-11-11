@@ -8,7 +8,7 @@ license = "Apache-2.0"
 repository = "https://github.com/zduny/mezzenger"
 homepage = "https://github.com/zduny/mezzenger/tree/master/mezzenger-webrtc-datachannel"
 documentation = "https://docs.rs/mezzenger-webrtc-datachannel/"
-keywords = ["message", "message-passing", "communication", "mezzenger", "webrtc", "data-channel"]
+keywords = ["message", "communication", "mezzenger", "webrtc", "data-channel"]
 
 
 [dependencies]
