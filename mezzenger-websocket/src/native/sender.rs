@@ -36,7 +36,7 @@ impl<SerializationError> std::error::Error for Error<SerializationError> where
 
 /// Message sender.
 ///
-/// Wraps around sink of [tungstenite::Message;].
+/// Wraps around sink of [tungstenite::Message].
 #[pin_project]
 pub struct Sender<S, Codec, Outgoing>
 where
