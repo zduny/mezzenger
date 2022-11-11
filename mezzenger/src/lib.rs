@@ -1,4 +1,6 @@
 //! Message passing infrastructure.
+//!
+//! See [repository](https://github.com/zduny/mezzenger) for more info.
 
 use std::{
     fmt::Display,
@@ -37,7 +39,7 @@ where
 
 impl<Other> std::error::Error for Error<Other> where Other: std::error::Error {}
 
-/// Trait for message receivers.
+/// Convenience trait for receiving messages.
 pub trait Receive<Message, Error> {
     fn receive(&mut self) -> Recv<Self>;
 }
@@ -58,7 +60,7 @@ where
 
 /// Future returned by [receive] method.
 ///
-/// [receive]: mezzenger::Receive::receive
+/// [receive]: self::Receive::receive
 pub struct Recv<'a, T>
 where
     T: ?Sized,
@@ -187,8 +189,8 @@ where
 /// messages to be 'lost' in transport.
 ///
 /// **NOTE**: This trait alone does not guarantee that messages will be received
-/// in the same order they were sent, neither does it guarantee deduplication
-/// - for that transport needs to be marked with [`Order`] trait as well.
+/// in the same order they were sent, neither does it guarantee deduplication -
+/// for that transport needs to be marked with [`Order`] trait as well.
 ///
 /// **NOTE to transport implementors**: this trait is only a marker - it's your
 /// responsibility to ensure that transport implementation marked with this trait
