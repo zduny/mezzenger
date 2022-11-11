@@ -1,5 +1,7 @@
 //! Transport for communication with
 //! [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API).
+//!
+//! See [repository](https://github.com/zduny/mezzenger) for more info.
 
 use std::{
     cell::RefCell,

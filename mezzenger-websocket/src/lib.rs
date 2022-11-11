@@ -9,6 +9,8 @@
 //! **NOTE**: interface may vary depending on the target platform:
 //! For example WASM targets have a `Transport` struct that implements both `Sink` and `Stream`,
 //! while on native targets they're separated into `Sender` and `Receiver` structs.
+//!
+//! See [repository](https://github.com/zduny/mezzenger) for more info.
 
 #[cfg(all(feature = "warp", not(target_arch = "wasm32")))]
 pub mod warp;
