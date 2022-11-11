@@ -2,20 +2,20 @@ use std::time::Duration;
 
 use anyhow::Result;
 use clap::Parser;
+use futures::{stream, SinkExt, StreamExt};
+use kodec::binary::Codec;
+use mezzenger::{Messages, Receive};
+use tokio::time::sleep;
 use tokio_tungstenite::connect_async;
 use url::Url;
-use futures::{SinkExt, StreamExt, stream};
-use kodec::binary::Codec;
-use tokio::time::sleep;
-use mezzenger::{Receive, Messages};
 
 /// Mezzenger tests native client
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
-   /// Server URL.
-   #[arg(short, long, default_value = "ws://localhost:3030/ws")]
-   url: String,
+    /// Server URL.
+    #[arg(short, long, default_value = "ws://localhost:3030/ws")]
+    url: String,
 }
 
 #[tokio::main]
@@ -30,10 +30,8 @@ async fn main() -> Result<()> {
     let (web_socket_sender, web_socket_receiver) = web_socket.split();
     println!("Opening transport...");
     let codec = Codec::default();
-    let mut sender = mezzenger_websocket::Sender::<_, Codec, common::Message2>::new(
-        web_socket_sender,
-        codec,
-    );
+    let mut sender =
+        mezzenger_websocket::Sender::<_, Codec, common::Message2>::new(web_socket_sender, codec);
     let mut receiver = mezzenger_websocket::Receiver::<_, Codec, common::Message1>::new(
         web_socket_receiver,
         codec,
@@ -41,7 +39,12 @@ async fn main() -> Result<()> {
     println!("Transport open.");
 
     println!("Sending welcome message...");
-    sender.send(common::Message2::Welcome { native_client: true }).await.unwrap();
+    sender
+        .send(common::Message2::Welcome {
+            native_client: true,
+        })
+        .await
+        .unwrap();
     println!("Welcome message sent.");
 
     let messages = common::messages1_all();
@@ -49,7 +52,12 @@ async fn main() -> Result<()> {
     assert_eq!(receiver.receive().await.unwrap(), messages[0]);
 
     println!("Sending...");
-    sender.send_all(&mut stream::iter(common::messages2_all().into_iter().map(Ok))).await.unwrap();
+    sender
+        .send_all(&mut stream::iter(
+            common::messages2_all().into_iter().map(Ok),
+        ))
+        .await
+        .unwrap();
     println!("Messages sent.");
 
     sleep(Duration::from_secs(1)).await;

@@ -16,10 +16,7 @@ pub fn messages1_part1() -> Vec<Message1> {
 }
 
 pub fn messages1_part2() -> Vec<Message1> {
-    vec![
-        Message1::Int(6),
-        Message1::String("World".to_string()),
-    ]
+    vec![Message1::Int(6), Message1::String("World".to_string())]
 }
 
 pub fn messages1_all() -> Vec<Message1> {
@@ -41,15 +38,15 @@ pub enum Message2 {
 }
 
 pub fn messages2_part1() -> Vec<Message2> {
-    vec![
-        Message2::Float(2.0),
-        Message2::String("Hello".to_string()),
-    ]
+    vec![Message2::Float(2.0), Message2::String("Hello".to_string())]
 }
 
 pub fn messages2_part2() -> Vec<Message2> {
     vec![
-        Message2::Struct { a: 2, b: "World".to_string() },
+        Message2::Struct {
+            a: 2,
+            b: "World".to_string(),
+        },
         Message2::Float(5.0),
         Message2::String("Hello again".to_string()),
     ]
@@ -59,7 +56,10 @@ pub fn messages2_all() -> Vec<Message2> {
     vec![
         Message2::Float(2.0),
         Message2::String("Hello".to_string()),
-        Message2::Struct { a: 2, b: "World".to_string() },
+        Message2::Struct {
+            a: 2,
+            b: "World".to_string(),
+        },
         Message2::Float(5.0),
         Message2::String("Hello again".to_string()),
     ]
