@@ -64,7 +64,7 @@ where
     }
 }
 
-impl<S, Codec, Outgoing> Sink<&Outgoing> for Sender<S, Codec, Outgoing>
+impl<S, Codec, Outgoing> Sink<Outgoing> for Sender<S, Codec, Outgoing>
 where
     S: Sink<Message, Error = warp::Error> + Unpin,
     Outgoing: Serialize,
@@ -76,10 +76,10 @@ where
         self.inner.poll_ready_unpin(cx).map_err(map_warp_error)
     }
 
-    fn start_send(mut self: Pin<&mut Self>, item: &Outgoing) -> Result<(), Self::Error> {
+    fn start_send(mut self: Pin<&mut Self>, item: Outgoing) -> Result<(), Self::Error> {
         let mut buffer = vec![];
         self.codec
-            .encode(&mut buffer, item)
+            .encode(&mut buffer, &item)
             .map_err(Error::SerializationError)
             .map_err(mezzenger::Error::Other)?;
         let message = Message::binary(buffer);

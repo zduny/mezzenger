@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum Message1 {
     Int(i32),
     String(String),
@@ -32,7 +32,7 @@ pub fn messages1_all() -> Vec<Message1> {
     ]
 }
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum Message2 {
     Welcome { native_client: bool },
     Float(f32),

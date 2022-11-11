@@ -20,7 +20,7 @@ pub async fn main() -> Result<(), JsValue> {
     assert_eq!(transport.receive().await.unwrap(), messages[0]);
 
     console_log!("Worker: sending...");
-    transport.send_all(&mut stream::iter(common::messages1_all().iter().map(Ok))).await.unwrap();
+    transport.send_all(&mut stream::iter(common::messages1_all().into_iter().map(Ok))).await.unwrap();
     console_log!("Worker: messages sent.");
 
     sleep(Duration::from_secs(1)).await;

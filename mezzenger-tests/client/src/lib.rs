@@ -17,11 +17,11 @@ pub async fn test_webworker() {
     console_log!("Transport open.");
 
     console_log!("Sending...");
-    for message in common::messages2_part1().iter() {
+    for message in common::messages2_part1().into_iter() {
         transport.send(message).await.unwrap();
     }
 
-    for message in common::messages2_part2().iter() {
+    for message in common::messages2_part2().into_iter() {
         transport.send(message).await.unwrap();
     }
     console_log!("Messages sent.");
@@ -42,7 +42,7 @@ pub async fn test_websocket() {
     console_log!("Transport open.");
 
     console_log!("Sending welcome message...");
-    transport.send(&common::Message2::Welcome { native_client: false }).await.unwrap();
+    transport.send(common::Message2::Welcome { native_client: false }).await.unwrap();
     console_log!("Welcome message sent.");
 
     let messages = common::messages1_all();
@@ -50,7 +50,7 @@ pub async fn test_websocket() {
     assert_eq!(transport.receive().await.unwrap(), messages[0]);
 
     console_log!("Sending...");
-    transport.send_all(&mut stream::iter(common::messages2_all().iter().map(Ok))).await.unwrap();
+    transport.send_all(&mut stream::iter(common::messages2_all().into_iter().map(Ok))).await.unwrap();
     console_log!("Messages sent.");
 
     sleep(Duration::from_secs(1)).await;

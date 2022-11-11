@@ -106,11 +106,11 @@ async fn handle_websocket(
 
     info!("Sending...");
     for message in common::messages1_part1().iter() {
-        sender.send(message).await.unwrap();
+        sender.send(message.clone()).await.unwrap();
     }
 
     for message in common::messages1_part2().iter() {
-        sender.send(message).await.unwrap();
+        sender.send(message.clone()).await.unwrap();
     }
     info!("Messages sent.");
 

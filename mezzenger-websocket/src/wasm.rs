@@ -203,7 +203,7 @@ where
 
     fn send_inner(
         &self,
-        message: &Outgoing,
+        message: Outgoing,
     ) -> Result<(), Error<<Codec as Encode>::Error, <Codec as Decode>::Error>> {
         let mut buffer = self.buffer.borrow_mut();
         self.codec
@@ -217,7 +217,7 @@ where
     }
 }
 
-impl<Codec, Incoming, Outgoing> Sink<&Outgoing> for Transport<Codec, Incoming, Outgoing>
+impl<Codec, Incoming, Outgoing> Sink<Outgoing> for Transport<Codec, Incoming, Outgoing>
 where
     Codec: 'static + kodec::Codec + Clone,
     Incoming: 'static,
@@ -236,7 +236,7 @@ where
         }
     }
 
-    fn start_send(self: Pin<&mut Self>, item: &Outgoing) -> Result<(), Self::Error> {
+    fn start_send(self: Pin<&mut Self>, item: Outgoing) -> Result<(), Self::Error> {
         if self.state.borrow().closed {
             Err(mezzenger::Error::Closed)
         } else {

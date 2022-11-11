@@ -41,7 +41,7 @@ async fn main() -> Result<()> {
     println!("Transport open.");
 
     println!("Sending welcome message...");
-    sender.send(&common::Message2::Welcome { native_client: true }).await.unwrap();
+    sender.send(common::Message2::Welcome { native_client: true }).await.unwrap();
     println!("Welcome message sent.");
 
     let messages = common::messages1_all();
@@ -49,7 +49,7 @@ async fn main() -> Result<()> {
     assert_eq!(receiver.receive().await.unwrap(), messages[0]);
 
     println!("Sending...");
-    sender.send_all(&mut stream::iter(common::messages2_all().iter().map(Ok))).await.unwrap();
+    sender.send_all(&mut stream::iter(common::messages2_all().into_iter().map(Ok))).await.unwrap();
     println!("Messages sent.");
 
     sleep(Duration::from_secs(1)).await;
