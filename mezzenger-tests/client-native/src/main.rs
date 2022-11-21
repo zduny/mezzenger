@@ -27,15 +27,13 @@ async fn main() -> Result<()> {
     let url = Url::parse(&args.url)?;
     let (web_socket, _) = connect_async(url).await?;
 
-    let (web_socket_sender, web_socket_receiver) = web_socket.split();
     println!("Opening transport...");
     let codec = Codec::default();
-    let mut sender =
-        mezzenger_websocket::Sender::<_, Codec, common::Message2>::new(web_socket_sender, codec);
-    let mut receiver = mezzenger_websocket::Receiver::<_, Codec, common::Message1>::new(
-        web_socket_receiver,
-        codec,
-    );
+    let (mut sender, mut receiver) =
+        mezzenger_websocket::Transport::<_, Codec, common::Message1, common::Message2>::new(
+            web_socket, codec,
+        )
+        .split();
     println!("Transport open.");
 
     println!("Sending welcome message...");

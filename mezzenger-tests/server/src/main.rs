@@ -76,18 +76,13 @@ async fn handle_websocket(
     browser_tests_notifier: Arc<Mutex<Option<Sender<()>>>>,
     native_tests_notifier: Arc<Mutex<Option<Sender<()>>>>,
 ) {
-    let (web_socket_sender, web_socket_receiver) = web_socket.split();
-
     info!("Opening transport...");
     let codec = Codec::default();
-    let mut sender = mezzenger_websocket::warp::Sender::<_, Codec, common::Message1>::new(
-        web_socket_sender,
-        codec,
-    );
-    let mut receiver = mezzenger_websocket::warp::Receiver::<_, Codec, common::Message2>::new(
-        web_socket_receiver,
-        codec,
-    );
+    let (mut sender, mut receiver) =
+        mezzenger_websocket::warp::Transport::<_, Codec, common::Message2, common::Message1>::new(
+            web_socket, codec,
+        )
+        .split();
     info!("Transport open.");
 
     let native_client = match receiver.receive().await.unwrap() {

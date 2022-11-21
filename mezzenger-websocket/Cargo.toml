@@ -1,6 +1,6 @@
 [package]
 name = "mezzenger-websocket"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["zduny <dzduniak@gmail.com>"]
 edition = "2021"
 description = "WebSocket mezzenger transport."
@@ -17,7 +17,7 @@ keywords = [
 ]
 
 [features]
-default = ["native", "wasm", "warp"] 
+default = ["native", "wasm"]
 native = ["tokio-tungstenite"]
 wasm = ["wasm-bindgen", "js-utils", "web-sys"]
 
