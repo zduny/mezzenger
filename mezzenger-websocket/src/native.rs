@@ -1,6 +1,6 @@
 //! Transport for communication over
 //! [WebSocket](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)
-//! while using [tokio_tungstenite].
+//! while using [tokio-tungstenite](https://github.com/snapview/tokio-tungstenite).
 
 use std::{
     fmt::{Debug, Display},
@@ -47,7 +47,7 @@ where
 {
 }
 
-/// Web Socket transport for [tokio-tungstenite].
+/// Web Socket transport for [tokio-tungstenite](https://github.com/snapview/tokio-tungstenite).
 ///
 /// Wraps around [tokio_tungstenite::WebSocketStream].
 ///

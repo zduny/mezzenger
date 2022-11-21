@@ -1,6 +1,6 @@
 //! Transport for communication over
 //! [WebSocket](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)
-//! while using [warp].
+//! while using [warp](https://github.com/seanmonstar/warp).
 
 use std::{
     fmt::{Debug, Display},
@@ -47,7 +47,7 @@ where
 {
 }
 
-/// Web Socket transport for [warp].
+/// Web Socket transport for [warp](https://github.com/seanmonstar/warp).
 ///
 /// Wraps around [warp::filters::ws::WebSocket].
 ///
