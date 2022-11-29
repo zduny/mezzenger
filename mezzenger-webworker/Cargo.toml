@@ -13,7 +13,7 @@ keywords = ["message", "message-passing", "communication", "mezzenger", "webwork
 [dependencies]
 wasm-bindgen = "0.2.83"
 serde = { version = "1.0.147", features = ["derive"] }
-mezzenger = "0.1.0"
+mezzenger = "0.1.2"
 kodec = "0.1.0"
 futures = "0.3.25"
 js-utils = { version = "0.1.2", default-features = false, features = ["queue", "event"] }
