@@ -1,6 +1,6 @@
 [package]
 name = "mezzenger-tcp"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["zduny <dzduniak@gmail.com>"]
 edition = "2021"
 description = "TCP mezzenger transport."
