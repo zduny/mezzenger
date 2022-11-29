@@ -11,7 +11,7 @@ use std::{
 use futures::{
     future::FusedFuture,
     stream::{FusedStream, Next},
-    Future, FutureExt, Stream, StreamExt,
+    Future, FutureExt, Sink, Stream, StreamExt,
 };
 
 use pin_project::pin_project;
@@ -208,3 +208,14 @@ pub trait Reliable {}
 /// responsibility to ensure that transport implementation marked with this trait
 /// meets guarantees mentioned above.  
 pub trait Order {}
+
+/// Trait for transports that implement `mezzenger` interface.
+pub trait Transport<Incoming, Outgoing, Error>:
+    Sink<Outgoing, Error = crate::Error<Error>> + Stream<Item = Result<Incoming, Error>>
+{
+}
+
+impl<T, Incoming, Outgoing, Error> Transport<Incoming, Outgoing, Error> for T where
+    T: Sink<Outgoing, Error = crate::Error<Error>> + Stream<Item = Result<Incoming, Error>>
+{
+}
