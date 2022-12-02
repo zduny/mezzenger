@@ -147,6 +147,7 @@ where
                 .await
                 .map_err(Error::<<Codec as Encode>::Error, <Codec as Decode>::Error>::IoError)
                 .map_err(mezzenger::Error::Other)?;
+            self.send_buffer.clear();
             Ok(())
         } else {
             Err(mezzenger::Error::Closed)
@@ -239,6 +240,9 @@ where
 
     fn poll_flush(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
         let me = self.project();
+        if *me.messages_to_send == 0 {
+            return Poll::Ready(Ok(()));
+        }
         if let Some(udp_socket) = &me.udp_socket {
             loop {
                 if me.send_buffer.is_empty() && *me.messages_to_send == 0 {
