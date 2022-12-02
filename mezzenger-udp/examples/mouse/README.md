@@ -8,12 +8,12 @@ Navigate to `mezzenger-udp` root directory.
 
 Start server:
 ```bash
-cargo run --example mouse
+cargo run --example mouse -- --server
 ```
 
 Start client:
 ```bash
-cargo run --example mouse -- --server
+cargo run --example mouse
 ```
 
 ## see also
