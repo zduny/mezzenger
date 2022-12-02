@@ -11,7 +11,7 @@ Start server:
 cargo run --example mouse -- --server
 ```
 
-Start client:
+Start client (in another terminal window):
 ```bash
 cargo run --example mouse
 ```
