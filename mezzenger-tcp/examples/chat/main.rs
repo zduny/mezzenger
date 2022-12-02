@@ -10,9 +10,9 @@ struct Args {
     #[arg(short, long)]
     server: bool,
 
-    /// Server URL.
+    /// Server address.
     #[arg(short, long, default_value = "127.0.0.1:8080")]
-    url: String,
+    address: String,
 }
 
 #[tokio::main]
@@ -20,9 +20,9 @@ async fn main() -> Result<()> {
     let args = Args::parse();
 
     if args.server {
-        server::run(&args.url).await?;
+        server::run(&args.address).await?;
     } else {
-        client::run(&args.url).await?;
+        client::run(&args.address).await?;
     }
 
     Ok(())
