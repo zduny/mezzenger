@@ -43,10 +43,6 @@ pub async fn run() -> Result<()> {
                     break;
                 }
             },
-            break_result = &mut break_signal => {
-                break_result.expect("failed to listen for event");
-                break;
-            },
             _ = interval.tick() => {
                 let duration = Instant::now() - last_time_received;
                 if duration > SERVER_DOWN_TIMEOUT && !server_down {
@@ -56,6 +52,10 @@ pub async fn run() -> Result<()> {
                     stdout().flush()?;
                 }
             }
+            break_result = &mut break_signal => {
+                break_result.expect("failed to listen for event");
+                break;
+            },
         }
     }
 
