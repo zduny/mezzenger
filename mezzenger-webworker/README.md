@@ -76,7 +76,7 @@ let received = transport.receive().await.except("failed to receive message");
 
 ```
 
-See [rust-webapp-template](https://github.com/zduny/rust-webapp-template) for more comprehenisve example.
+See [rust-webapp-template](https://github.com/zduny/rust-webapp-template) for more comprehensive example.
 
 ## see also
 
