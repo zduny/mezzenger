@@ -12,14 +12,14 @@ The goal of `mezzenger` project is to create and maintain a set of crates that m
 over the network and network-like interfaces.
 
 Other **goals**:
- - maintaining similiar interface across transport implementations,
+ - maintaining similar interface across transport implementations,
  - providing (where applicable) implementations that work both on native and browser WASM targets,
  - creation of various that make it easy to layer/compose transports of different types and/or properties (see **further work** section).
 
 **Non**-goals:
  - encryption - it should be handled by underlying transport,
  - node.js WASM targets - contributions are welcome, but they won't be developed/maintained by the [author](https://github.com/zduny) of this project,
- - best possible performance - implementations are supposed to be decent, without obvious areas for improvement, but if you need to save every bit of banwidth you'd likely be better served by a custom application-specific protocol.  
+ - best possible performance - implementations are supposed to be decent, without obvious areas for improvement, but if you need to save every bit of bandwidth you'd likely be better served by a custom application-specific protocol.  
 
 ## transport implementations
 
