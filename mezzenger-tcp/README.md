@@ -19,7 +19,7 @@ mezzenger = "0.1.2"
 mezzenger-tcp = "0.1.1"
 ```
 
-See example code here.
+See example code [here](https://github.com/zduny/mezzenger/tree/master/mezzenger-tcp/examples/chat).
 
 ## see also
 
