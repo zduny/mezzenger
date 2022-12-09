@@ -1,0 +1,17 @@
+[package]
+name = "mezzenger-dtls"
+version = "0.0.0"
+authors = ["zduny <dzduniak@gmail.com>"]
+edition = "2021"
+description = "DTLS mezzenger transport."
+license = "Apache-2.0"
+repository = "https://github.com/zduny/mezzenger"
+homepage = "https://github.com/zduny/mezzenger/tree/master/mezzenger-dtls"
+documentation = "https://docs.rs/mezzenger-dtls/"
+keywords = [
+    "message",
+    "message-passing",
+    "communication",
+    "mezzenger",
+    "dtls"
+]
