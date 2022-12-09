@@ -6,6 +6,11 @@ https://crates.io/crates/mezzenger-tcp
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/O5O31JYZ4)
 
+## note
+
+Despite its name this crate supports other transports as well as long as they implement 
+`AsyncRead` and `AsyncWrite` traits.
+
 ## usage
 
 Add dependencies to `Cargo.toml`:

@@ -1,13 +1,15 @@
-use std::{collections::HashMap, net::SocketAddr, sync::Arc};
+use std::{collections::HashMap, sync::Arc};
 
 use anyhow::{bail, Result};
 use futures::{pin_mut, FutureExt, SinkExt, StreamExt};
 use kodec::binary::Codec;
 use mezzenger::Receive;
 use mezzenger_tcp::Transport;
+use parity_tokio_ipc::{Endpoint, SecurityAttributes};
 use serde::{Deserialize, Serialize};
 use tokio::{
-    net::{TcpListener, TcpStream},
+    io::{AsyncRead, AsyncWrite},
+    net::TcpListener,
     select, spawn,
     sync::{
         mpsc::{unbounded_channel, UnboundedSender},
@@ -43,32 +45,66 @@ struct State {
     users: HashMap<String, User>,
 }
 
-pub async fn run(address: &str) -> Result<()> {
+pub async fn run(ipc: bool, address: &str, path: &str) -> Result<()> {
     tracing_subscriber::fmt().with_max_level(Level::INFO).init();
 
     info!("Server running!");
     let state = Arc::new(RwLock::new(State::default()));
 
-    let listener = TcpListener::bind(&address).await?;
-    info!("Listening at {}...", address);
-
     let break_signal = tokio::signal::ctrl_c().fuse();
     pin_mut!(break_signal);
-    loop {
-        select! {
-            listener_result = listener.accept() => {
-                let (stream, address) = listener_result?;
-                let state = state.clone();
-                spawn(async move {
-                    tracing::debug!("accepted connection");
-                    if let Err(error) = user_connected(stream, address, state).await {
-                        error!("Error occurred: {error}");
+
+    if ipc {
+        let mut endpoint = Endpoint::new(path.to_string());
+        endpoint.set_security_attributes(SecurityAttributes::allow_everyone_create()?);
+        let incoming = endpoint.incoming()?;
+        info!("Listening at {}...", path);
+
+        futures::pin_mut!(incoming);
+        loop {
+            select! {
+                incoming_option = incoming.next() => {
+                    if let Some(incoming_result) = incoming_option {
+                        match incoming_result {
+                            Ok(stream) => {
+                                let state = state.clone();
+                                spawn(async move {
+                                    if let Err(error) = user_connected(stream, state).await {
+                                        error!("Error occurred: {error}");
+                                    }
+                                });
+                            }
+                            Err(error) => error!("Error occurred: {error}"),
+                        }
+                    } else {
+                        break;
                     }
-                });
-            },
-            break_result = &mut break_signal => {
-                break_result.expect("failed to listen for event");
-                break;
+                }
+                break_result = &mut break_signal => {
+                    break_result.expect("failed to listen for event");
+                    break;
+                }
+            }
+        }
+    } else {
+        let listener = TcpListener::bind(&address).await?;
+        info!("Listening at {}...", address);
+
+        loop {
+            select! {
+                listener_result = listener.accept() => {
+                    let (stream, _address) = listener_result?;
+                    let state = state.clone();
+                    spawn(async move {
+                        if let Err(error) = user_connected(stream, state).await {
+                            error!("Error occurred: {error}");
+                        }
+                    });
+                },
+                break_result = &mut break_signal => {
+                    break_result.expect("failed to listen for event");
+                    break;
+                }
             }
         }
     }
@@ -77,11 +113,10 @@ pub async fn run(address: &str) -> Result<()> {
     Ok(())
 }
 
-async fn user_connected(
-    stream: TcpStream,
-    _address: SocketAddr,
-    state: Arc<RwLock<State>>,
-) -> Result<()> {
+async fn user_connected<S>(stream: S, state: Arc<RwLock<State>>) -> Result<()>
+where
+    S: AsyncWrite + AsyncRead + Send + 'static,
+{
     let codec = Codec::default();
     let (mut sender, mut receiver) =
         Transport::<_, Codec, client::Message, Message>::new(stream, codec).split();

@@ -3,10 +3,15 @@ use futures::{FutureExt, SinkExt, StreamExt};
 use kodec::binary::Codec;
 use mezzenger::{Messages, Receive};
 use mezzenger_tcp::Transport;
+use parity_tokio_ipc::Endpoint;
 use rustyline_async::{Readline, ReadlineError};
 use serde::{Deserialize, Serialize};
 use std::io::Write;
-use tokio::{net::TcpStream, select};
+use tokio::{
+    io::{AsyncRead, AsyncWrite},
+    net::TcpStream,
+    select,
+};
 
 use crate::server;
 
@@ -16,9 +21,19 @@ pub enum Message {
     Message { content: String },
 }
 
-pub async fn run(address: &str) -> Result<()> {
+pub async fn run(ipc: bool, address: &str, path: &str) -> Result<()> {
     println!("Connecting to server...");
-    let stream = TcpStream::connect(address).await?;
+    if ipc {
+        run_inner(Endpoint::connect(&path).await?).await
+    } else {
+        run_inner(TcpStream::connect(address).await?).await
+    }
+}
+
+async fn run_inner<S>(stream: S) -> Result<()>
+where
+    S: AsyncWrite + AsyncRead,
+{
     let codec = Codec::default();
     let (mut sender, mut receiver) =
         Transport::<_, Codec, server::Message, Message>::new(stream, codec).split();
