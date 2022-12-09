@@ -3,9 +3,12 @@ members = [
     "mezzenger",
     "mezzenger-tcp",
     "mezzenger-udp",
+    "mezzenger-dtls",
     "mezzenger-http",
     "mezzenger-webworker",
     "mezzenger-websocket",
     "mezzenger-webrtc-datachannel",
+    "mezzenger-rpc-macros",
+    "mezzenger-rpc",
 ]
 exclude = ["mezzenger-tests"]
