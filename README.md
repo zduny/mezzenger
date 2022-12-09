@@ -30,7 +30,7 @@ Other **goals**:
 
 **Non**-goals:
  - encryption - if required it should be handled by underlying transport,
- - node.js WASM targets - contributions are welcome, but they won't be developed/maintained by the [author](https://github.com/zduny) of this project,
+ - Node.js WASM targets - contributions are welcome, but they won't be developed/maintained by the [author](https://github.com/zduny) of this project,
  - best possible performance - implementations are supposed to be decent, without obvious areas for improvement, but if you need to save every bit of bandwidth you'd likely be better served by a custom application-specific protocol.  
 
 ## example
