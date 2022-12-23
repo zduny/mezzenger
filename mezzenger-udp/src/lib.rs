@@ -101,7 +101,7 @@ where
     codec: Codec,
     send_queue: VecDeque<Outgoing>,
     send_buffer: Vec<u8>,
-    messages_to_send: usize,
+    message_pending: bool,
     receive_buffer: Vec<u8>,
     _incoming: PhantomData<Incoming>,
 }
@@ -120,7 +120,7 @@ where
             codec,
             send_queue: VecDeque::new(),
             send_buffer: vec![],
-            messages_to_send: 0,
+            message_pending: false,
             receive_buffer: vec![0; 65536],
             _incoming: PhantomData,
         }
@@ -240,31 +240,17 @@ where
 
     fn poll_flush(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
         let me = self.project();
-        if me.send_queue.is_empty() && *me.messages_to_send == 0 {
+        if me.send_queue.is_empty() && !*me.message_pending {
             return Poll::Ready(Ok(()));
         }
         if let Some(udp_socket) = &me.udp_socket {
-            loop {
-                if me.send_buffer.is_empty() && *me.messages_to_send == 0 {
-                    if let Some(message) = me.send_queue.pop_front() {
-                        let result = me.codec.encode(&mut *me.send_buffer, &message);
-                        if let Err(error) = result {
-                            me.send_buffer.clear();
-                            return Poll::Ready(Err(mezzenger::Error::Other(
-                                Error::SerializationError(error),
-                            )));
-                        } else {
-                            *me.messages_to_send += 1;
-                        }
-                    } else {
-                        return Poll::Ready(Ok(()));
-                    }
-                } else {
+            loop {  
+                if *me.message_pending {
                     let bytes_to_send = me.send_buffer.len();
                     let result = udp_socket.borrow().poll_send(cx, me.send_buffer);
                     match result {
                         Poll::Ready(result) => {
-                            *me.messages_to_send -= 1;
+                            *me.message_pending = false;
                             me.send_buffer.clear();
                             match result {
                                 Ok(bytes_written) => {
@@ -288,6 +274,20 @@ where
                             }
                         }
                         Poll::Pending => return Poll::Pending,
+                    }
+                } else {
+                    if let Some(message) = me.send_queue.pop_front() {
+                        let result = me.codec.encode(&mut *me.send_buffer, &message);
+                        if let Err(error) = result {
+                            me.send_buffer.clear();
+                            return Poll::Ready(Err(mezzenger::Error::Other(
+                                Error::SerializationError(error),
+                            )));
+                        } else {
+                            *me.message_pending = true;
+                        }
+                    } else {
+                        return Poll::Ready(Ok(()));
                     }
                 }
             }
@@ -386,11 +386,17 @@ mod tests {
 
         left.send(()).await.unwrap();
         left.send(()).await.unwrap();
+        left.send(()).await.unwrap();
+        left.send(()).await.unwrap();
+        right.send(()).await.unwrap();
         right.send(()).await.unwrap();
         right.send(()).await.unwrap();
 
         assert_eq!(right.receive().await.unwrap(), ());
         assert_eq!(right.receive().await.unwrap(), ());
+        assert_eq!(right.receive().await.unwrap(), ());
+        assert_eq!(right.receive().await.unwrap(), ());
+        assert_eq!(left.receive().await.unwrap(), ());
         assert_eq!(left.receive().await.unwrap(), ());
         assert_eq!(left.receive().await.unwrap(), ());
     }
