@@ -8,7 +8,5 @@ members = [
     "mezzenger-webworker",
     "mezzenger-websocket",
     "mezzenger-webrtc-datachannel",
-    "mezzenger-rpc-macros",
-    "mezzenger-rpc",
 ]
 exclude = ["mezzenger-tests"]
