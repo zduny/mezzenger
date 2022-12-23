@@ -103,7 +103,7 @@ where
     type Error = mezzenger::Error<Error<<Codec as Encode>::Error, <Codec as Decode>::Error>>;
 
     fn poll_ready(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        self.inner.poll_ready_unpin(cx).map_err(map_warp_error)
+        self.inner.poll_ready_unpin(cx).map_err(map_error)
     }
 
     fn start_send(mut self: Pin<&mut Self>, item: Outgoing) -> Result<(), Self::Error> {
@@ -113,19 +113,19 @@ where
             .map_err(Error::SerializationError)
             .map_err(mezzenger::Error::Other)?;
         let message = Message::binary(buffer);
-        self.inner.start_send_unpin(message).map_err(map_warp_error)
+        self.inner.start_send_unpin(message).map_err(map_error)
     }
 
     fn poll_flush(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        self.inner.poll_flush_unpin(cx).map_err(map_warp_error)
+        self.inner.poll_flush_unpin(cx).map_err(map_error)
     }
 
     fn poll_close(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        self.inner.poll_close_unpin(cx).map_err(map_warp_error)
+        self.inner.poll_close_unpin(cx).map_err(map_error)
     }
 }
 
-fn map_warp_error<SerializationError, DeserializationError>(
+fn map_error<SerializationError, DeserializationError>(
     tungstenite_error: tungstenite::Error,
 ) -> mezzenger::Error<Error<SerializationError, DeserializationError>> {
     if matches!(
