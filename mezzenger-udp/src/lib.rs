@@ -240,7 +240,7 @@ where
 
     fn poll_flush(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
         let me = self.project();
-        if *me.messages_to_send == 0 {
+        if me.send_queue.is_empty() && *me.messages_to_send == 0 {
             return Poll::Ready(Ok(()));
         }
         if let Some(udp_socket) = &me.udp_socket {
