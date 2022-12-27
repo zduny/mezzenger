@@ -50,6 +50,6 @@ Following utils are on roadmap for development:
 
 ## see also
 
-[zzrpc](https://github.com/zduny/zzrpc) - [RPC](https://en.wikipedia.org/wiki/Remote_procedure_call) over `mezzenger` transports.
+[zzrpc](https://github.com/zduny/zzrpc) - remote procedure call over `mezzenger` transports.
 
 [kodec](https://github.com/zduny/kodec)
