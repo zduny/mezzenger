@@ -1,6 +1,6 @@
 [package]
 name = "mezzenger-websocket"
-version = "0.2.3"
+version = "0.2.4"
 authors = ["zduny <dzduniak@gmail.com>"]
 edition = "2021"
 description = "WebSocket mezzenger transport."
