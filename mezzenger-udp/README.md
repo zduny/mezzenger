@@ -15,7 +15,7 @@ Add dependencies to `Cargo.toml`:
 # ...
 serde = { version = "1", features = ["derive"] }
 kodec = { version = "0.1.0", features = ["binary"] } # or json or different one from another crate...
-mezzenger = "0.1.2"
+mezzenger = "0.1.3"
 mezzenger-udp = "0.1.2"
 ```
 

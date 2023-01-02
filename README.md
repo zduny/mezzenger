@@ -15,7 +15,7 @@ https://crates.io/crates/mezzenger
 | [mezzenger-dtls](https://github.com/zduny/mezzenger/tree/master/mezzenger-dtls)                              | *wip*        | *n/a*        | Transport over DTLS implementation.                                                                                  |
 | [mezzenger-webworker](https://github.com/zduny/mezzenger/tree/master/mezzenger-webworker)                    | *n/a*        | ✅             | Communication with [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers).  |
 | [mezzenger-websocket](https://github.com/zduny/mezzenger/tree/master/mezzenger-websocket)                    | ✅           | ✅             | Transport over [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API).                          |
-| [mezzenger-webrtc-datachannel](https://github.com/zduny/mezzenger/tree/master/mezzenger-webrtc-datachannel)  | *to do*      | *wip*         | Transport over [WebRTC data channel](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Using_data_channels). |
+| [mezzenger-channel](https://github.com/zduny/mezzenger/tree/master/mezzenger-channel)  | ✅      | ✅        | Transport over [futures](https://github.com/rust-lang/futures-rs) channels. |
 
 
 ## description
