@@ -13,7 +13,7 @@ Add dependencies to `Cargo.toml`:
 ```toml
 [dependencies]
 # ...
-mezzenger = "0.1.2"
+mezzenger = "0.1.3"
 mezzenger-channel = "0.1.0"
 ```
 

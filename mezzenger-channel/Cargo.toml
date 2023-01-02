@@ -11,7 +11,7 @@ documentation = "https://docs.rs/mezzenger-channel/"
 keywords = ["message", "message-passing", "communication", "mezzenger", "futures", "channel"]
 
 [dependencies]
-mezzenger = "0.1.2"
+mezzenger = "0.1.3"
 futures = "0.3.25"
 pin-project = "1.0.12"
 
