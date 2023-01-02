@@ -25,6 +25,13 @@ pub enum Error<Other> {
     Other(Other),
 }
 
+impl<Other> Error<Other> {
+    /// Was error caused by transport being closed.
+    pub fn closed(&self) -> bool {
+        matches!(self, Error::Closed)
+    }
+}
+
 impl<Other> Display for Error<Other>
 where
     Other: Display,
