@@ -1,0 +1,25 @@
+[package]
+name = "mezzenger-utils"
+version = "0.1.0"
+authors = ["zduny <dzduniak@gmail.com>"]
+edition = "2021"
+description = "Utilities for mezzenger."
+license = "Apache-2.0"
+repository = "https://github.com/zduny/mezzenger"
+homepage = "https://github.com/zduny/mezzenger/tree/master/mezzenger-channel"
+documentation = "https://docs.rs/mezzenger-channel/"
+keywords = ["message", "message-passing", "communication", "mezzenger", "utils"]
+
+[features]
+default = ["inspector", "splitter", "merger", "numbered", "orderer", "reliabler", "last_only"]
+inspector = []
+splitter = []
+merger = []
+numbered = []
+orderer = []
+reliabler = []
+last_only = []
+
+[dependencies]
+mezzenger = "0.1.3"
+futures = "0.3.25"
