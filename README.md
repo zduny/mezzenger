@@ -39,7 +39,7 @@ See [rust-webapp-template](https://github.com/zduny/rust-webapp-template).
 
 ## see also
 
-[`mezzenger-utils`](https://github.com/zduny/mezzenger/tree/master/mezzenger-utils) - utilities for `mezzenger`.
+[mezzenger-utils](https://github.com/zduny/mezzenger/tree/master/mezzenger-utils) - utilities for `mezzenger`.
 
 [zzrpc](https://github.com/zduny/zzrpc) - remote procedure call over `mezzenger` transports.
 
