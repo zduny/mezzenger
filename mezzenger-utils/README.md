@@ -28,11 +28,15 @@ Following utilities are available or staged for development:
   Potentially useful when user doesn't care about stale messages (for example multiplayer video games).<br>
   **Work in progress**.
 
-- `Reliabler`
+- `Reliabler` - wrapper turning unreliable transport into reliable one (by acknowledging and resending lost messages after timeout).<br>
+  **Work in progress**.
 
-- `Orderer`
+- `Orderer` - wrapper turning unordered (not guaranteeing message order)
+but reliable transport into ordered one.<br>
+  **Work in progress**.
 
-- `Unreliabler`
+- `Unreliabler` - wrapper turning a transport into unreliable (possibly losing messages) and/or unordered (sending messages not in order, possibly duplicating messages) one - useful for testing.<br>
+  **Work in progress**. 
 
 ## see also
 
