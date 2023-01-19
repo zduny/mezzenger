@@ -1,34 +1,38 @@
-# mezzenger-channel
+# mezzenger-utils
 
-Transport for communication over [futures](https://github.com/rust-lang/futures-rs) channels.
+Utils for [mezzenger](https://github.com/zduny/mezzenger).
 
-https://crates.io/crates/mezzenger-channel
+https://crates.io/crates/mezzenger-utils
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/O5O31JYZ4)
 
-## usage
+## available utilities
 
-Add dependencies to `Cargo.toml`:
+Following utilities are available or staged for development:
 
-```toml
-[dependencies]
-# ...
-mezzenger = "0.1.3"
-mezzenger-channel = "0.1.0"
-```
+- `Inspector` - wrapper transport calling a callback whenever it sends or receives a message.<br>
+  **Work in progress**.
 
-Example code:
+- `Splitter` - split transport into two with different message types. 
+  **Work in progress**.
 
-```rust
-let (mut left, mut right) = transports();
+- `Merger` - merge [`futures`](https://github.com/rust-lang/futures-rs) `Stream` and `Sink`
+  into a `mezzenger` transport.
+  **Work in progress**.
 
-left.send("Hello World!").await.unwrap();
-right.send(123).await.unwrap();
+- `Numbered` - wrapper transport attaching an ordered number to messages.
+  **Work in progress**.
 
-use mezzenger::Receive;
-assert_eq!(right.receive().await.unwrap(), "Hello World!");
-assert_eq!(left.receive().await.unwrap(), 123);
-```
+- `LastOnly` - wrapper transport turning a numbered (but not necessarily ordered) transport
+  into an ordered transport, discarding old messages (polling a transport for the next message will return the latest received message, ignoring messages received before).<br><br>
+  Potentially useful when user doesn't care about stale messages (for example multiplayer video games).
+  **Work in progress**.
+
+- `Reliabler`
+
+- `Orderer`
+
+- `Unreliabler`
 
 ## see also
 
