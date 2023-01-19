@@ -16,7 +16,7 @@ Following utilities are available or staged for development:
 - `Splitter` - split transport into two with different message types.<br>
   **Work in progress**.
 
-- `Merger` - merge [`futures`](https://github.com/rust-lang/futures-rs) `Stream` and `Sink`
+- `Merger` - merge `futures`(https://github.com/rust-lang/futures-rs) `Stream` and `Sink`
   into a `mezzenger` transport.<br>
   **Work in progress**.
 
