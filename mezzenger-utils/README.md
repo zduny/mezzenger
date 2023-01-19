@@ -32,7 +32,7 @@ Following utilities are available or staged for development:
   **Work in progress**.
 
 - `Orderer` - wrapper turning unordered (not guaranteeing message order)
-but reliable transport into ordered one.<br>
+but reliable transport into ordered (and deduplicating) one.<br>
   **Work in progress**.
 
 - `Unreliabler` - wrapper turning a transport into unreliable (possibly losing messages) and/or unordered (sending messages not in order, possibly duplicating messages) one - useful for testing.<br>
