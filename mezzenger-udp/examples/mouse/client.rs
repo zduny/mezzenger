@@ -8,6 +8,7 @@ use futures::{pin_mut, FutureExt, StreamExt};
 use kodec::binary::Codec;
 use mezzenger::Messages;
 use mezzenger_udp::Transport;
+use mezzenger_utils::{numbered, LatestOnly};
 use tokio::{net::UdpSocket, select, signal::ctrl_c, time::interval};
 
 use crate::server;
@@ -17,7 +18,9 @@ const SERVER_DOWN_TIMEOUT: Duration = Duration::from_secs(1);
 pub async fn run() -> Result<()> {
     let udp_socket = UdpSocket::bind("0.0.0.0:1234").await?;
     let codec = Codec::default();
-    let transport = Transport::<_, Codec, server::Message, ()>::new(udp_socket, codec);
+    let transport =
+        Transport::<_, Codec, numbered::Wrapper<u64, server::Message>, ()>::new(udp_socket, codec);
+    let transport = LatestOnly::new(transport).into_unwrapping();
 
     print!("Connecting...");
     stdout().flush()?;
