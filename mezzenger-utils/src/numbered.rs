@@ -9,6 +9,7 @@ use std::{
 use futures::{stream::FusedStream, Sink, Stream};
 use num::{traits::WrappingAdd, One, Zero};
 use pin_project::pin_project;
+use serde::{Serialize, Deserialize};
 
 /// Trait implemented by messages with attached number.
 pub trait Number {
@@ -29,7 +30,7 @@ pub trait Unwrap {
 }
 
 /// Message wrapper used by [`Numbered`] transport.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Wrapper<N, T> {
     /// Message number.
     pub number: N,
