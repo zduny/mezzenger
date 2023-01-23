@@ -1,11 +1,11 @@
-//! Wrapper transport turning a [numbered] (but not necessarily [ordered]) transport 
-//! into an [ordered] transport, discarding old messages (polling a transport for 
-//! the next message will return the latest received message, ignoring messages 
+//! Wrapper transport turning a [numbered] (but not necessarily [ordered]) transport
+//! into an [ordered] transport, discarding old messages (polling a transport for
+//! the next message will return the latest received message, ignoring messages
 //! received before).
-//! 
-//! Potentially useful when user doesn't care about stale messages 
+//!
+//! Potentially useful when user doesn't care about stale messages
 //! (for example - multiplayer video games).
-//! 
+//!
 //! [numbered]: crate::numbered::Number
 //! [ordered]: mezzenger::Order
 
@@ -20,11 +20,11 @@ use pin_project::pin_project;
 
 use crate::numbered::{Number, Unwrap};
 
-/// Wrapper transport turning a [numbered] (but not necessarily [ordered]) transport 
-/// into an [ordered] transport, discarding old messages (polling a transport for 
-/// the next message will return the latest received message, ignoring messages 
+/// Wrapper transport turning a [numbered] (but not necessarily [ordered]) transport
+/// into an [ordered] transport, discarding old messages (polling a transport for
+/// the next message will return the latest received message, ignoring messages
 /// received before).
-/// 
+///
 /// [numbered]: crate::numbered::Number
 /// [ordered]: mezzenger::Order
 #[pin_project]
@@ -48,7 +48,7 @@ where
     Incoming: Number<Output = N>,
     for<'a> &'a N: PartialOrd,
 {
-    /// Wrap a provided [numbered] transport turning it into [ordered] transport returning latest 
+    /// Wrap a provided [numbered] transport turning it into [ordered] transport returning latest
     /// message when polling it for the next received message.
     ///
     /// [numbered]: crate::numbered::Number
@@ -64,15 +64,15 @@ where
     }
 
     /// Return an [unwrapping] transport.
-    /// 
-    /// By default [`LatestOnly`] stream returns messages in their original form 
+    ///
+    /// By default [`LatestOnly`] stream returns messages in their original form
     /// (with number attached).<br>
     /// If `Incoming` message implements [Unwrap] you can transform this transport into
-    /// [`LatestOnlyUnwrapping`] automatically unwrapping messages, useful when 
+    /// [`LatestOnlyUnwrapping`] automatically unwrapping messages, useful when
     /// you don't care about the message number.
-    /// 
-    /// [Unwrap]: crate::numbered::Unwrap 
-    /// [unwrapping]: crate::numbered::Unwrap 
+    ///
+    /// [Unwrap]: crate::numbered::Unwrap
+    /// [unwrapping]: crate::numbered::Unwrap
     pub fn into_unwrapping<I>(self) -> LatestOnlyUnwrapping<T, E, N, Incoming, I, Outgoing>
     where
         Incoming: Unwrap<Output = I>,

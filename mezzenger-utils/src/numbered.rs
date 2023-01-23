@@ -9,7 +9,7 @@ use std::{
 use futures::{stream::FusedStream, Sink, Stream};
 use num::{traits::WrappingAdd, One, Zero};
 use pin_project::pin_project;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 /// Trait implemented by messages with attached number.
 pub trait Number {
@@ -59,14 +59,14 @@ impl<N, T> Unwrap for Wrapper<N, T> {
 }
 
 /// Wrapper transport attaching number to sent messages.
-/// 
+///
 /// Received messages are of [`Wrapper`] type.
-/// 
+///
 /// First message number is [zero].<br>
 /// Next message number = previous message number + [one].
-/// 
+///
 /// Message numbers will [wrap] when reaching maximum value.
-/// 
+///
 /// [zero]: num::Zero
 /// [one]: num::One
 /// [wrap]: num::traits::WrappingAdd
@@ -91,8 +91,8 @@ where
     N: Clone + Zero + One + WrappingAdd,
 {
     /// Create new [numbered] transport wrapping provided transport.
-    /// 
-    /// [numbered]: self::Number 
+    ///
+    /// [numbered]: self::Number
     pub fn new(transport: T) -> Self {
         Numbered {
             inner: transport,
