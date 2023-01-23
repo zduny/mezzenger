@@ -8,5 +8,6 @@ members = [
     "mezzenger-webworker",
     "mezzenger-websocket",
     "mezzenger-channel",
+    "mezzenger-utils"
 ]
 exclude = ["mezzenger-tests"]
