@@ -244,7 +244,7 @@ where
             return Poll::Ready(Ok(()));
         }
         if let Some(udp_socket) = &me.udp_socket {
-            loop {  
+            loop {
                 if *me.message_pending {
                     let bytes_to_send = me.send_buffer.len();
                     let result = udp_socket.borrow().poll_send(cx, me.send_buffer);
@@ -275,20 +275,18 @@ where
                         }
                         Poll::Pending => return Poll::Pending,
                     }
-                } else {
-                    if let Some(message) = me.send_queue.pop_front() {
-                        let result = me.codec.encode(&mut *me.send_buffer, &message);
-                        if let Err(error) = result {
-                            me.send_buffer.clear();
-                            return Poll::Ready(Err(mezzenger::Error::Other(
-                                Error::SerializationError(error),
-                            )));
-                        } else {
-                            *me.message_pending = true;
-                        }
+                } else if let Some(message) = me.send_queue.pop_front() {
+                    let result = me.codec.encode(&mut *me.send_buffer, &message);
+                    if let Err(error) = result {
+                        me.send_buffer.clear();
+                        return Poll::Ready(Err(mezzenger::Error::Other(
+                            Error::SerializationError(error),
+                        )));
                     } else {
-                        return Poll::Ready(Ok(()));
+                        *me.message_pending = true;
                     }
+                } else {
+                    return Poll::Ready(Ok(()));
                 }
             }
         } else {
