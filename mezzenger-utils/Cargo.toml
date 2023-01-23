@@ -24,7 +24,7 @@ last_only = ["numbered"]
 mezzenger = "0.1.3"
 futures = "0.3.25"
 pin-project = "1.0.12"
-num = { version = "*", optional = true }
+num = { version = "0.4.0", optional = true }
 
 [dev-dependencies]
 mezzenger-channel = "0.1.0"
