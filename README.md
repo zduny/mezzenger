@@ -26,7 +26,7 @@ over the network and network-like interfaces.
 Other **goals**:
  - maintaining similar interface across transport implementations,
  - providing (where applicable) implementations that work both on native and browser WASM targets,
- - development of various utilities that make it easy to layer/compose transports of different types and/or properties (see **further work** section).
+ - development of various utilities that make it easy to layer/compose transports of different types and/or properties (see [mezzenger-utils](https://github.com/zduny/mezzenger/tree/master/mezzenger-utils)).
 
 **Non**-goals:
  - encryption - if required it should be handled by the underlying transport,
