@@ -6,7 +6,7 @@
 //!
 //! ## Example
 //!
-//! ```ignore 
+//! ```ignore
 //! let (mut left, mut right) = transports();
 //!
 //! left.send("Hello World!").await.unwrap();
@@ -17,11 +17,17 @@
 //! assert_eq!(left.receive().await.unwrap(), 123);
 //! ```
 
-use std::{fmt::Display, marker::PhantomData, pin::Pin, task::{Context, Poll}};
+use std::{
+    fmt::Display,
+    marker::PhantomData,
+    pin::Pin,
+    task::{Context, Poll},
+};
 
 use futures::{
     channel::mpsc::{unbounded, SendError, UnboundedReceiver, UnboundedSender},
-    Sink, Stream, stream::{FusedStream, Fuse}, StreamExt,
+    stream::{Fuse, FusedStream},
+    Sink, Stream, StreamExt,
 };
 use pin_project::pin_project;
 
@@ -98,15 +104,19 @@ where
     }
 }
 
-impl<Receiver, Sender, Incoming, Outgoing> Stream for Transport<Receiver, Sender, Incoming, Outgoing>
+impl<Receiver, Sender, Incoming, Outgoing> Stream
+    for Transport<Receiver, Sender, Incoming, Outgoing>
 where
     Receiver: Stream<Item = Incoming>,
-    Sender: Sink<Outgoing, Error = SendError>, {
+    Sender: Sink<Outgoing, Error = SendError>,
+{
     type Item = Result<Incoming, Error>;
 
     fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         let me = self.project();
-        me.receiver.poll_next(cx).map(|item_option| item_option.map(Ok))
+        me.receiver
+            .poll_next(cx)
+            .map(|item_option| item_option.map(Ok))
     }
 }
 
@@ -118,10 +128,12 @@ fn map_error(error: SendError) -> mezzenger::Error<Error> {
     }
 }
 
-impl<Receiver, Sender, Incoming, Outgoing> FusedStream for Transport<Receiver, Sender, Incoming, Outgoing> 
+impl<Receiver, Sender, Incoming, Outgoing> FusedStream
+    for Transport<Receiver, Sender, Incoming, Outgoing>
 where
     Receiver: Stream<Item = Incoming>,
-    Sender: Sink<Outgoing, Error = SendError>, {
+    Sender: Sink<Outgoing, Error = SendError>,
+{
     fn is_terminated(&self) -> bool {
         self.receiver.is_terminated()
     }
