@@ -4,7 +4,7 @@ use kodec::binary::Codec;
 use mezzenger::{Messages, Receive};
 use mezzenger_tcp::Transport;
 use parity_tokio_ipc::Endpoint;
-use rustyline_async::{Readline, ReadlineError};
+use rustyline_async::{Readline, ReadlineEvent};
 use serde::{Deserialize, Serialize};
 use std::io::Write;
 use tokio::{
@@ -42,7 +42,12 @@ where
     let (mut readline, mut stdout) = Readline::new("> ".to_string())?;
     writeln!(stdout, "Type your name:")?;
 
-    let name = readline.readline().await?;
+    let name = if let ReadlineEvent::Line(name) = readline.readline().await? {
+        name
+    } else {
+        println!("Exiting...");
+        return Ok(());
+    };
     sender
         .send(Message::Init {
             user_name: name.clone(),
@@ -94,13 +99,17 @@ where
                 }
             },
             command = readline.readline().fuse() => match command {
-                Ok(line) => {
-                    let message = Message::Message { content: line.to_string() };
-                    sender.send(message).await?;
-                },
-                Err(ReadlineError::Eof | ReadlineError::Interrupted) => {
-                    writeln!(stdout, "Exiting...")?;
-                    break;
+                Ok(event) => {
+                    match event {
+                        ReadlineEvent::Line(line) => {
+                            let message = Message::Message { content: line.to_string() };
+                            sender.send(message).await?;
+                        },
+                        ReadlineEvent::Eof | ReadlineEvent::Interrupted => {
+                            writeln!(stdout, "Exiting...")?;
+                            break;
+                        }
+                    }
                 },
                 Err(error) => {
                     writeln!(stdout, "Error occurred while handling command: {error}")?;
