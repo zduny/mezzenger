@@ -144,6 +144,7 @@ where
 }
 
 /// Create two transports over two unbounded channels.
+#[allow(clippy::type_complexity)]
 pub fn transports<Incoming, Outgoing>() -> (
     Transport<UnboundedReceiver<Incoming>, UnboundedSender<Outgoing>, Incoming, Outgoing>,
     Transport<UnboundedReceiver<Outgoing>, UnboundedSender<Incoming>, Outgoing, Incoming>,
