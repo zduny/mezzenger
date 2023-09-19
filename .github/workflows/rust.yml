@@ -37,12 +37,6 @@ jobs:
     - name: Install browser
       uses: browser-actions/setup-chrome@v1
 
-    - name: Show Chrome version
-      run: chrome --version
-    
-    - name: Set default browser to Chrome
-      run: xdg-settings set default-web-browser google-chrome.desktop
-
     - name: Build
       if: ${{ false }}
       run: cargo build --verbose
