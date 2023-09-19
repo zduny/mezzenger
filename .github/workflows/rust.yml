@@ -34,6 +34,12 @@ jobs:
     - name: Install wasm-pack
       uses: jetli/wasm-pack-action@v0.4.0
 
+    - name: Install browser
+      uses: abhi1693/setup-browser@v0.3.4
+      with:
+        browser: chrome
+        version: latest
+
     - name: Build
       run: cargo build --verbose
 
