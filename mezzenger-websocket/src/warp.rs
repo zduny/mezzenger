@@ -183,6 +183,14 @@ where
                                             self.terminated = true;
                                             Poll::Ready(None)
                                         },
+                                        tungstenite::Error::Io(error) => {
+                                            if matches!(error.kind(), std::io::ErrorKind::ConnectionReset | std::io::ErrorKind::ConnectionAborted) {
+                                                self.terminated = true;
+                                                Poll::Ready(None)
+                                            } else {
+                                                Poll::Ready(Some(Err(self::Error::WarpError(warp_error))))
+                                            }
+                                        }
                                         _ => Poll::Ready(Some(Err(self::Error::WarpError(warp_error)))),
                                     }
                                 } else {
