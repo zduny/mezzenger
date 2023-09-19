@@ -35,10 +35,13 @@ jobs:
       uses: jetli/wasm-pack-action@v0.4.0
 
     - name: Install browser
-      uses: abhi1693/setup-browser@v0.3.4
-      with:
-        browser: chrome
-        version: latest
+      uses: browser-actions/setup-chrome@v1
+
+    - name: Show Chrome version
+      run: chrome --version
+    
+    - name: Set default browser to Chrome
+      run: export BROWSER=/usr/bin/google-chrome
 
     - name: Build
       run: cargo build --verbose
