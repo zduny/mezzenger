@@ -1,5 +1,8 @@
 # mezzenger
 
+[![Crate](https://img.shields.io/crates/v/mezzenger.svg)](https://crates.io/crates/mezzenger)
+[![API](https://docs.rs/mezzenger/badge.svg)](https://docs.rs/mezzenger)
+
 Message passing infrastructure for Rust.
 
 This crate defines common interface for message transports.
