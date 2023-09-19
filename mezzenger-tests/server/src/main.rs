@@ -130,7 +130,10 @@ async fn handle_websocket(
     if native_client {
         let mut native_tests_counter = native_tests_counter.lock().unwrap();
         *native_tests_counter.get_mut() += 1;
-        println!("Native client test {}/2 passed.", *native_tests_counter.get_mut());
+        println!(
+            "Native client test {}/2 passed.",
+            *native_tests_counter.get_mut()
+        );
         if *native_tests_counter.get_mut() >= 2 {
             if let Some(notifier) = native_tests_notifier.lock().unwrap().take() {
                 notifier.send(()).unwrap();

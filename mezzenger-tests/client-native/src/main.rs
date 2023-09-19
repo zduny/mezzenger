@@ -75,7 +75,7 @@ async fn main() -> Result<()> {
     println!("Testing abrupt close...");
 
     let (web_socket, _) = connect_async(&url).await?;
-    
+
     println!("Opening transport...");
     let codec = Codec::default();
     let (mut sender, mut receiver) =
