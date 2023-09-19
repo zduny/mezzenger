@@ -23,3 +23,7 @@ jobs:
 
     - name: Run tests
       run: cargo test --verbose
+
+    - name: Run web tests
+      working-directory: ./mezzenger-tests
+      run: ./build_and_run.sh
