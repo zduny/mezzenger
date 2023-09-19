@@ -406,8 +406,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_size_limit() {
-        let left = TcpListener::bind("127.0.0.1:8086").await.unwrap();
-        let right = TcpStream::connect("127.0.0.1:8086").await.unwrap();
+        let left = TcpListener::bind("127.0.0.1:1234").await.unwrap();
+        let right = TcpStream::connect("127.0.0.1:1234").await.unwrap();
 
         let (left, _) = left.accept().await.unwrap();
 
