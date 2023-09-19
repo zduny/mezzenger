@@ -1,5 +1,8 @@
 # mezzenger-webworker
 
+[![Crate](https://img.shields.io/crates/v/mezzenger-webworker.svg)](https://crates.io/crates/mezzenger-webworker)
+[![API](https://docs.rs/mezzenger-webworker/badge.svg)](https://docs.rs/mezzenger-webworker)
+
 Transport for communication with [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API).
 
 https://crates.io/crates/mezzenger-webworker

@@ -1,5 +1,8 @@
 # mezzenger-utils
 
+[![Crate](https://img.shields.io/crates/v/mezzenger-utils.svg)](https://crates.io/crates/mezzenger-utils)
+[![API](https://docs.rs/mezzenger-utils/badge.svg)](https://docs.rs/mezzenger-utils)
+
 Utils for [mezzenger](https://github.com/zduny/mezzenger).
 
 https://crates.io/crates/mezzenger-utils

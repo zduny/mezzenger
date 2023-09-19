@@ -1,5 +1,7 @@
 # mezzenger
 
+[![Test Status](https://github.com/zduny/mezzenger/actions/workflows/rust.yml/badge.svg)](https://github.com/zduny/mezzenger/actions)
+
 Message passing infrastructure for Rust.
 
 https://crates.io/crates/mezzenger

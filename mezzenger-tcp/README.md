@@ -1,5 +1,8 @@
 # mezzenger-tcp
 
+[![Crate](https://img.shields.io/crates/v/mezzenger-tcp.svg)](https://crates.io/crates/mezzenger-tcp)
+[![API](https://docs.rs/mezzenger-tcp/badge.svg)](https://docs.rs/mezzenger-tcp)
+
 TCP transport for [mezzenger](https://github.com/zduny/mezzenger).
 
 https://crates.io/crates/mezzenger-tcp

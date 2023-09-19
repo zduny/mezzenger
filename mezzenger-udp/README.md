@@ -1,5 +1,8 @@
 # mezzenger-udp
 
+[![Crate](https://img.shields.io/crates/v/mezzenger-udp.svg)](https://crates.io/crates/mezzenger-udp)
+[![API](https://docs.rs/mezzenger-udp/badge.svg)](https://docs.rs/mezzenger-udp)
+
 UDP transport for [mezzenger](https://github.com/zduny/mezzenger).
 
 https://crates.io/crates/mezzenger-udp

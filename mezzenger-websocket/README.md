@@ -1,5 +1,8 @@
 # mezzenger-websocket
 
+[![Crate](https://img.shields.io/crates/v/mezzenger-websocket.svg)](https://crates.io/crates/mezzenger-websocket)
+[![API](https://docs.rs/mezzenger-websocket/badge.svg)](https://docs.rs/mezzenger-websocket)
+
 Transport for communicating over [WebSocket](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket).
 
 Provides implementations for:
