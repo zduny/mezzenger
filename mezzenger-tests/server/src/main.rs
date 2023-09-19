@@ -130,7 +130,7 @@ async fn handle_websocket(
     if native_client {
         let mut native_tests_counter = native_tests_counter.lock().unwrap();
         *native_tests_counter.get_mut() += 1;
-        println!(
+        info!(
             "Native client test {}/2 passed.",
             *native_tests_counter.get_mut()
         );
