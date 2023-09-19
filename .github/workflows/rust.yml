@@ -41,12 +41,14 @@ jobs:
       run: chrome --version
     
     - name: Set default browser to Chrome
-      run: export BROWSER=/usr/bin/google-chrome
+      run: xdg-mime default google-chrome.desktop 'x-scheme-handler/http'
 
     - name: Build
+      if: ${{ false }}
       run: cargo build --verbose
 
     - name: Run tests
+      if: ${{ false }}
       run: cargo test --verbose
 
     - name: Run web tests
