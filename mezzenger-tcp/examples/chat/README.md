@@ -33,6 +33,6 @@ cargo run --example chat -- --ipc
 ## see also
 
 [rustyline-async](https://github.com/zyansheep/rustyline-async) - crate by [zyansheep](https://github.com/zyansheep)
-used in this example to create a command promt interface.
+used in this example to create a command prompt interface.
 
 [parity-tokio-ipc](https://github.com/paritytech/parity-tokio-ipc) - interprocess transport for UNIX/Windows.
