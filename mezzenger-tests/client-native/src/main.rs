@@ -25,7 +25,7 @@ async fn main() -> Result<()> {
     println!("Hello World!");
 
     let url = Url::parse(&args.url)?;
-    let (web_socket, _) = connect_async(url).await?;
+    let (web_socket, _) = connect_async(&url).await?;
 
     println!("Opening transport...");
     let codec = Codec::default();
@@ -71,6 +71,49 @@ async fn main() -> Result<()> {
             .collect::<Vec<common::Message1>>(),
         receiver.messages().collect::<Vec<common::Message1>>().await
     );
+
+    println!("Testing abrupt close...");
+
+    let (web_socket, _) = connect_async(&url).await?;
+    
+    println!("Opening transport...");
+    let codec = Codec::default();
+    let (mut sender, mut receiver) =
+        mezzenger_websocket::Transport::<_, Codec, common::Message1, common::Message2>::new(
+            web_socket, codec,
+        )
+        .split();
+    println!("Transport open.");
+
+    println!("Sending welcome message...");
+    sender
+        .send(common::Message2::Welcome {
+            native_client: true,
+        })
+        .await
+        .unwrap();
+    println!("Welcome message sent.");
+
+    let messages = common::messages1_all();
+
+    assert_eq!(receiver.receive().await.unwrap(), messages[0]);
+
+    println!("Sending...");
+    sender
+        .send_all(&mut stream::iter(
+            common::messages2_all().into_iter().map(Ok),
+        ))
+        .await
+        .unwrap();
+    println!("Messages sent.");
+
+    sleep(Duration::from_secs(1)).await;
+
+    println!("Dropping transport...");
+    drop(sender);
+    drop(receiver);
+    println!("Transport dropped.");
+
     println!("Tests passed.");
 
     Ok(())

@@ -1,3 +1,4 @@
+use std::cell::RefCell;
 use std::env::current_dir;
 use std::sync::Arc;
 use std::sync::Mutex;
@@ -25,22 +26,33 @@ async fn main() -> Result<()> {
 
     let browser_tests_passed_sender = Arc::new(Mutex::new(Some(browser_tests_passed_sender)));
     let native_tests_passed_sender = Arc::new(Mutex::new(Some(native_tests_passed_sender)));
+    let native_tests_counter = Arc::new(Mutex::new(RefCell::new(0)));
 
     let current_dir = current_dir()?;
     info!("Current working directory: {:?}", current_dir);
 
     let browser_tests_notifier = warp::any().map(move || browser_tests_passed_sender.clone());
     let native_tests_notifier = warp::any().map(move || native_tests_passed_sender.clone());
+    let native_tests_counter = warp::any().map(move || native_tests_counter.clone());
 
     let static_files = warp::get().and(warp::fs::dir("www"));
     let websocket = warp::path("ws")
         .and(warp::ws())
         .and(browser_tests_notifier)
         .and(native_tests_notifier)
+        .and(native_tests_counter)
         .map(
-            |ws: warp::ws::Ws, browser_tests_notifier, native_tests_notifier| {
+            |ws: warp::ws::Ws,
+             browser_tests_notifier,
+             native_tests_notifier,
+             native_tests_counter| {
                 ws.on_upgrade(move |socket| {
-                    handle_websocket(socket, browser_tests_notifier, native_tests_notifier)
+                    handle_websocket(
+                        socket,
+                        browser_tests_notifier,
+                        native_tests_notifier,
+                        native_tests_counter,
+                    )
                 })
             },
         );
@@ -75,6 +87,7 @@ async fn handle_websocket(
     web_socket: WebSocket,
     browser_tests_notifier: Arc<Mutex<Option<Sender<()>>>>,
     native_tests_notifier: Arc<Mutex<Option<Sender<()>>>>,
+    native_tests_counter: Arc<Mutex<RefCell<usize>>>,
 ) {
     info!("Opening transport...");
     let codec = Codec::default();
@@ -115,9 +128,13 @@ async fn handle_websocket(
     );
 
     if native_client {
-        info!("Native client tests passed.");
-        if let Some(notifier) = native_tests_notifier.lock().unwrap().take() {
-            notifier.send(()).unwrap();
+        let mut native_tests_counter = native_tests_counter.lock().unwrap();
+        *native_tests_counter.get_mut() += 1;
+        println!("Native client test {}/2 passed.", *native_tests_counter.get_mut());
+        if *native_tests_counter.get_mut() >= 2 {
+            if let Some(notifier) = native_tests_notifier.lock().unwrap().take() {
+                notifier.send(()).unwrap();
+            }
         }
     } else {
         info!("Browser client tests passed.");
