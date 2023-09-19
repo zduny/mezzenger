@@ -1,5 +1,8 @@
 # mezzenger-channel
 
+[![Crate](https://img.shields.io/crates/v/mezzenger-channel.svg)](https://crates.io/crates/mezzenger-channel)
+[![API](https://docs.rs/mezzenger-channel/badge.svg)](https://docs.rs/mezzenger-channel)
+
 Transport for communication over [futures](https://github.com/rust-lang/futures-rs) channels.
 
 https://crates.io/crates/mezzenger-channel
