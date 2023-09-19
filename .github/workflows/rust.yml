@@ -53,4 +53,4 @@ jobs:
 
     - name: Run web tests
       working-directory: ./mezzenger-tests
-      run: ./build_and_run.sh
+      run: ./build_and_run_ci.sh
