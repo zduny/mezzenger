@@ -45,6 +45,10 @@ jobs:
       if: ${{ false }}
       run: cargo test --verbose
 
+    - name: Build web tests
+      working-directory: ./mezzenger-tests
+      run: ./build.sh
+
     - name: Run web tests
       working-directory: ./mezzenger-tests
-      run: ./build_and_run_ci.sh
+      run: ./run_ci.sh
